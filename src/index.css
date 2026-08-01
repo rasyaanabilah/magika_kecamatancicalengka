@@ -1,0 +1,83 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap");
+@import "tailwindcss";
+
+:root {
+  --font-sans:
+    "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Custom Color System for MAGIKA (Indonesian Government Portal Blue & Gold Emerald vibe) */
+  --color-primary-50: #f0f7ff;
+  --color-primary-100: #e0effe;
+  --color-primary-200: #bae0fd;
+  --color-primary-300: #7cc7fb;
+  --color-primary-400: #38a9f8;
+  --color-primary-500: #0e8dec;
+  --color-primary-600: #026fc5;
+  --color-primary-700: #03599f;
+  --color-primary-800: #074c83;
+  --color-primary-900: #0b406e;
+  --color-primary-950: #07294a;
+
+  /* Custom Orange System for Educational Vibe */
+  --color-secondary-50: #fffaf0;
+  --color-secondary-100: #ffeed3;
+  --color-secondary-200: #ffd8a6;
+  --color-secondary-300: #ffbc71;
+  --color-secondary-400: #ff9b3a;
+  --color-secondary-500: #ff7d1a;
+  --color-secondary-600: #f15e07;
+  --color-secondary-700: #c84505;
+  --color-secondary-800: #9e340a;
+  --color-secondary-900: #7f2b0c;
+
+  --color-gold-50: #fefce8;
+  --color-gold-100: #fef9c3;
+  --color-gold-200: #fef08a;
+  --color-gold-300: #fde047;
+  --color-gold-400: #facc15;
+  --color-gold-500: #eab308;
+  --color-gold-600: #ca8a04;
+  --color-gold-700: #a16207;
+  --color-gold-800: #854d0e;
+  --color-gold-900: #713f12;
+}
+
+/* Base custom visual helpers */
+body {
+  font-family: var(--font-sans);
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Custom glassy container elements */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+/* Scrollbar customizations */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
