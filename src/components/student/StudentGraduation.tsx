@@ -212,9 +212,9 @@ export default function StudentGraduation({
         <div className="p-4 bg-blue-50 border border-blue-200/80 rounded-2xl flex items-start gap-3 shadow-2xs">
           <AlertTriangle className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
           <div className="text-xs text-blue-900 space-y-1">
-            <div className="font-extrabold">Informasi Cetak & Penyerahan Berkas:</div>
+            <div className="font-extrabold">Informasi Penyerahan Berkas:</div>
             <p className="leading-relaxed text-blue-800">
-              Dokumen dapat dicetak langsung melalui tombol cetak di atas (Format A4).
+              Dokumen Surat Balasan Permohonan Magang harap di cetak dan diserahkan ke Badan Kesatuan Bangsa dan Politik Kabupaten Bandung. Paling lambat 7 hari kerja setelah dokumen diterbitkan. Pastikan membawa dokumen asli dan fotokopi persyaratan administrasi yang telah diserahkan sebelumnya.
             </p>
           </div>
         </div>

@@ -173,7 +173,7 @@ export default function StudentOverview({
                   <div>
                     <h5 className="font-bold text-slate-800 text-xs">Pendaftaran Berhasil Diajukan</h5>
                     <p className="text-[10px] text-slate-500 mt-0.5 font-mono">Terekam sistem pada {application.tglDaftar}</p>
-                    <p className="text-xs text-slate-500 mt-1">Data Anda dan 6 lampiran persyaratan administrasi telah berhasil terekam secara sah.</p>
+                    <p className="text-xs text-slate-500 mt-1">Data Anda dan lampiran persyaratan administrasi telah berhasil terekam secara sah.</p>
                   </div>
                 </div>
 
@@ -211,20 +211,12 @@ export default function StudentOverview({
                     <h5 className="font-bold text-slate-800 text-xs">Pengumuman Hasil & Magang</h5>
                     <p className="text-xs text-slate-500 mt-1">
                       {application.status === 'Lulus' && 'Selamat! Anda berhak mengikuti magang.'}
-                      {application.status === 'Ditolak' && 'Pendaftaran ditolak. Silakan lihat catatan peninjauan di bawah.'}
+                      {application.status === 'Ditolak' && 'Pendaftaran ditolak. Silakan lihat alasan penolakan di bawah.'}
                       {application.status !== 'Lulus' && application.status !== 'Ditolak' && 'Tahap akhir keputusan kelulusan magang.'}
                     </p>
                   </div>
                 </div>
               </div>
-
-              {/* Status Notes Block if exist */}
-              {application.statusNote && (
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl space-y-1">
-                  <div className="text-xs font-bold text-blue-800">Catatan dari Petugas Peninjau:</div>
-                  <p className="text-xs text-blue-900 leading-relaxed">{application.statusNote}</p>
-                </div>
-              )}
 
               {/* Rejection / Resubmit Actions */}
               {application.status === 'Ditolak' && (
@@ -241,7 +233,7 @@ export default function StudentOverview({
             </div>
           </div>
 
-          {/* Right Column: Downloads, WA Group Coordinator link and Kartu Peserta Digital */}
+          {/* Right Column: Grup WhatsApp dan Dokumen Kelulusan */}
           {application.status !== 'Ditolak' && (
             <div className="lg:col-span-4 space-y-6">
               {/* accepted candidate widgets */}

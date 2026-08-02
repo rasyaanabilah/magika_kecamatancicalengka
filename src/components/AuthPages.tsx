@@ -1,7 +1,7 @@
 /**
  * Component: AuthPages
  * Deskripsi: Halaman Otentikasi (Masuk & Daftar) untuk pendaftar dan pengguna
- * dengan dukungan login email/password, Google OAuth, serta quick login demo.
+ * dengan dukungan login email/password, Google OAuth.
  */
 
 import React, { useState } from 'react';

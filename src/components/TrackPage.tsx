@@ -255,7 +255,7 @@ export default function TrackPage({
                           {matchedApp.id}
                         </span>{" "}
                         dinyatakan LULUS. Silakan login ke akun Anda dan unduh
-                        surat untuk dikirim ke Soreang.
+                        surat untuk dikirim ke Badan Kesatuan Bangsa dan Politik Kabupaten Bandung.
                       </p>
                     </div>
                   )}
@@ -369,7 +369,7 @@ export default function TrackPage({
             MAGIKA Kecamatan Cicalengka
           </div>
           <div className="text-[11px]">
-            © 2026 Portal Magang Kemitraan Digital Daerah. All Rights Reserved.
+            © 2026 MAGICKA Cicalengka District. Digital Empowerment for School and University Students. All Rights Reserved. By Programmer Rasyaa Nabilah.
           </div>
         </div>
       </footer>
