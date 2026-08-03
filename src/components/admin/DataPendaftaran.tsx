@@ -564,18 +564,26 @@ export default function DataPendaftaran({
                     <div className="min-w-0">
                       <p className="font-extrabold text-slate-800 text-xs">Folder Tautan Google Drive Berkas</p>
                       <p className="text-[11px] text-slate-500 font-mono break-all mt-0.5">
-                        {selectedApp.linkDrive || 'https://drive.google.com/drive/folders/1NPM8E7j5i34Jov-qiRKvJA0nXw6PJKT8?usp=sharing'}
+                        {selectedApp.linkDrive ? selectedApp.linkDrive : 'Belum ada tautan Google Drive.'}
                       </p>
                     </div>
                   </div>
 
-                  <a 
-                    href={selectedApp.linkDrive || 'https://drive.google.com/drive/folders/1NPM8E7j5i34Jov-qiRKvJA0nXw6PJKT8?usp=sharing'}
+                 <a
+                    href={selectedApp.linkDrive || '#'}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl transition-all shadow-xs flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
+                    onClick={(e) => {
+                      if (!selectedApp.linkDrive) e.preventDefault();
+                    }}
+                    className={`px-4 py-2 text-white font-extrabold text-xs rounded-xl transition-all shadow-xs flex items-center justify-center gap-1.5 shrink-0 ${
+                      selectedApp.linkDrive
+                        ? 'bg-blue-600 hover:bg-blue-700 cursor-pointer'
+                        : 'bg-slate-300 cursor-not-allowed pointer-events-none'
+                    }`}
                   >
-                    <ExternalLink className="h-3.5 w-3.5" /> Buka Link Drive Peserta
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    Buka Link Drive Peserta
                   </a>
                 </div>
               </div>
