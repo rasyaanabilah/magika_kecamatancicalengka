@@ -113,8 +113,7 @@ export interface User {
   email: string;
   namaLengkap: string;
   role: 'student' | 'admin' | 'camat';
-  username?: string;
-  password?: string;
+  username?: string; 
   universitas?: string;
   prodi?: string;
   noHp?: string;

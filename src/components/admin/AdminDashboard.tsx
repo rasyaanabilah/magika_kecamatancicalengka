@@ -57,9 +57,7 @@ export default function AdminDashboard({
   onDeleteApplication = () => {},
   currentUser,
   users = [],
-  onAddUser = () => {},
-  onUpdateUser = () => {},
-  onDeleteUser = () => {},
+  onUpdateUser = () => {}, 
   suratList = [],
   onCreateSurat = async () => {},
   onDeleteSurat = async () => {},
@@ -428,13 +426,7 @@ export default function AdminDashboard({
 
           {/* TAB 6: DAFTAR AKUN */}
           {activeTab === "kelola-akun" && (
-            <DaftarAkun
-              users={users}
-              currentUser={currentUser}
-              onCreateUser={onAddUser}
-              onUpdateUser={onUpdateUser}
-              onDeleteUser={onDeleteUser}
-            />
+            <DaftarAkun users={users} />
           )}
 
           {/* TAB 7: SETELAN & PROFIL */}

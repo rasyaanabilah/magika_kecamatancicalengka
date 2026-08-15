@@ -487,68 +487,65 @@ export default function App() {
     };
   }, [isOfflineMode]);
 
-  const handleAddUser = async (newUser: User) => {
-    try {
-      if (isOfflineMode) {
-        setUsers((prev) => {
-          const exists = prev.some((u) => u.id === newUser.id);
-          if (exists)
-            return prev.map((u) => (u.id === newUser.id ? newUser : u));
-          return [...prev, newUser];
-        });
-        return;
-      }
-      await setDoc(doc(db, "users", newUser.id), newUser);
-    } catch (err) {
-      console.error("Error adding user to Firestore:", err);
-    }
-  };
-
+  // Memperbarui profil pengguna yang sedang digunakan.
+  // Password TIDAK disimpan ke Firestore. Password dikelola oleh
+  // Firebase Authentication.
   const handleUpdateUser = async (updatedUser: User) => {
     try {
-      let finalUser = { ...updatedUser };
+      // Buat salinan data profil dan pastikan field password, jika ada
+      // dari kode lama, dibuang sebelum data dikirim ke Firestore.
+      const safeUser = { ...updatedUser } as User & {
+        password?: string;
+      };
+      delete safeUser.password;
+
       if (isOfflineMode) {
         setUsers((prev) =>
-          prev.map((u) => (u.id === finalUser.id ? finalUser : u)),
+          prev.map((u) => (u.id === safeUser.id ? safeUser : u)),
         );
-        if (currentUser && currentUser.id === finalUser.id) {
-          setCurrentUser(finalUser);
+
+        if (currentUser && currentUser.id === safeUser.id) {
+          setCurrentUser(safeUser);
           localStorage.setItem(
             "magika_offline_user",
-            JSON.stringify(finalUser),
+            JSON.stringify(safeUser),
           );
         }
+
         return;
       }
-      // Konversi gambar base64 menjadi URL penyimpanan sebelum menyimpan profil pengguna.
-      if (updatedUser.avatarUrl && updatedUser.avatarUrl.startsWith("data:")) {
+
+      // Jika foto masih berupa Data URL, unggah ke Firebase Storage terlebih dahulu.
+      if (safeUser.avatarUrl?.startsWith("data:")) {
         const url = await uploadToStorage(
-          updatedUser.avatarUrl,
-          `avatar_${updatedUser.id}.png`,
+          safeUser.avatarUrl,
+          `avatar_${safeUser.id}.png`,
           "avatars",
         );
-        finalUser.avatarUrl = url;
+
+        safeUser.avatarUrl = url;
       }
-      await setDoc(doc(db, "users", finalUser.id), finalUser);
-      if (currentUser && currentUser.id === finalUser.id) {
-        setCurrentUser(finalUser);
+
+      // merge: true agar field lain di dokumen users tidak ikut terhapus.
+      await setDoc(
+        doc(db, "users", safeUser.id),
+        safeUser,
+        { merge: true },
+      );
+
+      // Sinkronkan state pengguna yang sedang login.
+      if (currentUser && currentUser.id === safeUser.id) {
+        setCurrentUser(safeUser);
       }
+
+      // Sinkronkan daftar users jika data pengguna tersebut sedang ada di state.
+      setUsers((prev) =>
+        prev.map((u) => (u.id === safeUser.id ? safeUser : u)),
+      );
     } catch (err) {
       console.error("Error updating user in Firestore:", err);
     }
-  };
-
-  const handleDeleteUser = async (id: string) => {
-    try {
-      if (isOfflineMode) {
-        setUsers((prev) => prev.filter((u) => u.id !== id));
-        return;
-      }
-      await deleteDoc(doc(db, "users", id));
-    } catch (err) {
-      console.error("Error deleting user from Firestore:", err);
-    }
-  };
+  }; 
 
   const handleLoginWithEmail = async (email: string, password: string) => {
     const cleanEmail = email.toLowerCase().trim();
@@ -778,8 +775,7 @@ export default function App() {
         id: uid,
         email: email.toLowerCase().trim(),
         namaLengkap: name.trim(),
-        role: "student",
-        password: password,
+        role: "student", 
       };
 
       await setDoc(doc(db, "users", uid), newUser);
@@ -799,8 +795,7 @@ export default function App() {
           id: newUid,
           email: email.toLowerCase().trim(),
           namaLengkap: name.trim(),
-          role: "student",
-          password: password,
+          role: "student", 
         };
         setUsers((prev) => [...prev, newUser]);
         setCurrentUser(newUser);
@@ -1252,10 +1247,7 @@ export default function App() {
             {currentUser.role === "admin" && (
               <AdminDashboard
                 currentUser={currentUser}
-                users={users}
-                onAddUser={handleAddUser}
-                onUpdateUser={handleUpdateUser}
-                onDeleteUser={handleDeleteUser}
+                users={users} 
                 applications={applications}
                 onUpdateStatus={handleUpdateStatus}
                 onUpdateApplication={handleUpdateApplication}
@@ -1267,6 +1259,7 @@ export default function App() {
                 suratList={suratList}
                 onCreateSurat={handleCreateSurat}
                 onDeleteSurat={handleDeleteSurat}
+                onUpdateUser={handleUpdateUser}
               />
             )}
 
@@ -1325,4 +1318,4 @@ export default function App() {
       )}
     </div>
   );
-}
+} 
