@@ -4,16 +4,16 @@
  * (Tipe gender, aplikasi magang, pengguna, berkas, dan jenis surat).
  */
 
-export type Gender = 'Laki-laki' | 'Perempuan';
+export type Gender = "Laki-laki" | "Perempuan";
 
-export type LamaMagang = '1 Bulan' | '2 Bulan' | '3 Bulan' | '6 Bulan' | string;
+export type LamaMagang = "1 Bulan" | "2 Bulan" | "3 Bulan" | "6 Bulan" | string;
 
-export type ApplicationStatus = 
-  | 'Menunggu' 
-  | 'Lulus' 
-  | 'Ditolak'
-  | 'Sedang Magang'
-  | 'Selesai';
+export type ApplicationStatus =
+  | "Menunggu"
+  | "Lulus"
+  | "Ditolak"
+  | "Sedang Magang"
+  | "Selesai";
 
 export interface FileData {
   name: string;
@@ -29,26 +29,27 @@ export interface Application {
   tglDaftar: string;
   status: ApplicationStatus;
   statusNote?: string;
-  
+
   // Data Pribadi
   namaLengkap: string;
   jenisKelamin: Gender;
   noHp: string;
   alamatLengkap: string;
-  
+
   // Kategori Pendaftar
-  kategoriPendaftar?: 'mahasiswa' | 'siswa';
+  kategoriPendaftar?: "mahasiswa" | "siswa";
   nim?: string;
   nisn?: string;
   kelas?: string;
   jurusan?: string;
-  
+
   // Data Kampus / Sekolah
-  universitas: string; // Bisa berupa Universitas atau Nama Sekolah (Instansi Pendidikan)
-  fakultas: string;    // Hanya untuk mahasiswa
-  prodi: string;       // Program Studi (untuk mahasiswa) / Jurusan (untuk siswa)
-  semester: string;    // Hanya untuk mahasiswa
-  
+  universitas?: string; // Legacy field: masih dipertahankan untuk data lama
+  instansiPendidikan?: string; // Field baru untuk data pendaftaran baru
+  fakultas: string; // Hanya untuk mahasiswa
+  prodi: string; // Program Studi (untuk mahasiswa) / Jurusan (untuk siswa)
+  semester: string; // Hanya untuk mahasiswa
+
   // Data Magang
   durasi: LamaMagang;
   tanggalMulai: string;
@@ -56,7 +57,7 @@ export interface Application {
   tujuanMagang: string;
   tanggalMulaiMagang?: string;
   tanggalSelesaiMagang?: string;
-  
+
   // Dokumen & Berkas Pendukung (Link Google Drive)
   linkDrive?: string;
   files?: {
@@ -112,9 +113,10 @@ export interface User {
   id: string;
   email: string;
   namaLengkap: string;
-  role: 'student' | 'admin' | 'camat';
-  username?: string; 
+  role: "student" | "admin" | "camat";
+  username?: string;
   universitas?: string;
+  instansiPendidikan?: string;
   prodi?: string;
   noHp?: string;
   avatarUrl?: string;
@@ -134,5 +136,4 @@ export interface CamatDashboardProps {
 /**
  * Tipe Tab Navigasi Camat Portal
  */
-export type CamatTab = 'pendaftar' | 'laporan' | 'setelan';
-
+export type CamatTab = "pendaftar" | "laporan" | "setelan";

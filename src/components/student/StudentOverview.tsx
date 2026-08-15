@@ -46,8 +46,14 @@ export default function StudentOverview({
   setActiveTab,
   setIsEditingProfile,
 }: StudentOverviewProps) {
+  const instansiDisplay =
+    application?.instansiPendidikan ??
+    currentUser.instansiPendidikan ??
+    currentUser.universitas ??
+    "";
+
   const isProfileComplete = !!(
-    currentUser.universitas &&
+    instansiDisplay &&
     currentUser.prodi &&
     currentUser.noHp
   );
@@ -110,7 +116,7 @@ export default function StudentOverview({
             {isProfileComplete ? (
               <div className="pt-1 text-center md:text-left">
                 <p className="text-xs text-blue-600 font-semibold">
-                  {currentUser.universitas} • {currentUser.prodi}
+                  {instansiDisplay} • {currentUser.prodi}
                 </p>
                 <div className="flex flex-wrap justify-center md:justify-start gap-x-4 gap-y-1.5 text-[11px] text-slate-500 mt-2 font-medium">
                   <span className="flex items-center gap-1">
@@ -123,7 +129,7 @@ export default function StudentOverview({
               </div>
             ) : null}
           </div>
-        </div> 
+        </div>
       </section>
 
       {!application ? (

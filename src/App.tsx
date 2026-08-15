@@ -497,7 +497,10 @@ export default function App() {
       const safeUser = { ...updatedUser } as User & {
         password?: string;
       };
+      safeUser.instansiPendidikan =
+        safeUser.instansiPendidikan || safeUser.universitas || "";
       delete safeUser.password;
+      delete safeUser.universitas;
 
       if (isOfflineMode) {
         setUsers((prev) =>
@@ -506,10 +509,7 @@ export default function App() {
 
         if (currentUser && currentUser.id === safeUser.id) {
           setCurrentUser(safeUser);
-          localStorage.setItem(
-            "magika_offline_user",
-            JSON.stringify(safeUser),
-          );
+          localStorage.setItem("magika_offline_user", JSON.stringify(safeUser));
         }
 
         return;
@@ -527,11 +527,7 @@ export default function App() {
       }
 
       // merge: true agar field lain di dokumen users tidak ikut terhapus.
-      await setDoc(
-        doc(db, "users", safeUser.id),
-        safeUser,
-        { merge: true },
-      );
+      await setDoc(doc(db, "users", safeUser.id), safeUser, { merge: true });
 
       // Sinkronkan state pengguna yang sedang login.
       if (currentUser && currentUser.id === safeUser.id) {
@@ -545,7 +541,7 @@ export default function App() {
     } catch (err) {
       console.error("Error updating user in Firestore:", err);
     }
-  }; 
+  };
 
   const handleLoginWithEmail = async (email: string, password: string) => {
     const cleanEmail = email.toLowerCase().trim();
@@ -643,8 +639,10 @@ export default function App() {
                 matched?.namaLengkap ||
                 cleanEmail.split("@")[0],
               role: existingUserInFirestore?.role || matched?.role || "student",
-              universitas:
+              instansiPendidikan:
+                existingUserInFirestore?.instansiPendidikan ||
                 existingUserInFirestore?.universitas ||
+                matched?.instansiPendidikan ||
                 matched?.universitas ||
                 "",
               prodi: existingUserInFirestore?.prodi || matched?.prodi || "",
@@ -674,8 +672,10 @@ export default function App() {
                   cleanEmail.split("@")[0],
                 role:
                   existingUserInFirestore?.role || matched?.role || "student",
-                universitas:
+                instansiPendidikan:
+                  existingUserInFirestore?.instansiPendidikan ||
                   existingUserInFirestore?.universitas ||
+                  matched?.instansiPendidikan ||
                   matched?.universitas ||
                   "",
                 prodi: existingUserInFirestore?.prodi || matched?.prodi || "",
@@ -775,7 +775,7 @@ export default function App() {
         id: uid,
         email: email.toLowerCase().trim(),
         namaLengkap: name.trim(),
-        role: "student", 
+        role: "student",
       };
 
       await setDoc(doc(db, "users", uid), newUser);
@@ -795,7 +795,7 @@ export default function App() {
           id: newUid,
           email: email.toLowerCase().trim(),
           namaLengkap: name.trim(),
-          role: "student", 
+          role: "student",
         };
         setUsers((prev) => [...prev, newUser]);
         setCurrentUser(newUser);
@@ -876,7 +876,10 @@ export default function App() {
 
   const handleNewApplication = async (newApp: Application) => {
     // Pastikan semua field terdefinisi dengan benar sehingga tidak ada nilai undefined yang dikirim ke Firestore.
-    const sanitizedApp = { ...newApp };
+    const sanitizedApp: Application = {
+      ...newApp,
+      instansiPendidikan: newApp.instansiPendidikan || newApp.universitas || "",
+    };
     if (sanitizedApp.kategoriPendaftar === "siswa") {
       sanitizedApp.nim = "";
       sanitizedApp.nisn = sanitizedApp.nisn || "";
@@ -909,22 +912,36 @@ export default function App() {
     };
 
     const finalApp = removeUndefined(sanitizedApp);
+    const finalAppForFirestore = {
+      ...finalApp,
+      instansiPendidikan:
+        finalApp.instansiPendidikan || finalApp.universitas || "",
+    };
+
+    // Data baru wajib memakai field instansiPendidikan, sementara data lama tetap dibiarkan.
+    delete finalAppForFirestore.universitas;
 
     // Perbarui state aplikasi secara optimistis untuk memberi respons UI instan sebelum data disimpan ke Firestore.
     setApplications((prev) => {
-      const exists = prev.some((a) => a.id === finalApp.id);
+      const exists = prev.some((a) => a.id === finalAppForFirestore.id);
       if (exists) {
-        return prev.map((a) => (a.id === finalApp.id ? finalApp : a));
+        return prev.map((a) =>
+          a.id === finalAppForFirestore.id ? finalAppForFirestore : a,
+        );
       }
-      return [finalApp, ...prev];
+      return [finalAppForFirestore, ...prev];
     });
 
     if (currentUser && currentUser.role === "student") {
       const updatedUser = {
         ...currentUser,
-        universitas: finalApp.universitas,
-        prodi: finalApp.prodi,
-        noHp: finalApp.noHp,
+        instansiPendidikan:
+          finalAppForFirestore.instansiPendidikan ||
+          currentUser.instansiPendidikan ||
+          currentUser.universitas ||
+          "",
+        prodi: finalAppForFirestore.prodi,
+        noHp: finalAppForFirestore.noHp,
       };
       await handleUpdateUser(updatedUser);
     }
@@ -934,7 +951,10 @@ export default function App() {
     }
 
     try {
-      await setDoc(doc(db, "pendaftar_magang", finalApp.id), finalApp);
+      await setDoc(
+        doc(db, "pendaftar_magang", finalAppForFirestore.id),
+        finalAppForFirestore,
+      );
     } catch (err) {
       console.error("Error creating application in Firestore:", err);
     }
@@ -1247,7 +1267,7 @@ export default function App() {
             {currentUser.role === "admin" && (
               <AdminDashboard
                 currentUser={currentUser}
-                users={users} 
+                users={users}
                 applications={applications}
                 onUpdateStatus={handleUpdateStatus}
                 onUpdateApplication={handleUpdateApplication}
@@ -1318,4 +1338,4 @@ export default function App() {
       )}
     </div>
   );
-} 
+}

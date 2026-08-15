@@ -1,11 +1,11 @@
-import { Application } from '../../types';
+import { Application } from "../../types";
 
 /**
  * Memunculkan inisial nama untuk avatar fallback
  */
 export function getInitials(name: string): string {
-  if (!name) return 'C';
-  const parts = name.trim().split(' ');
+  if (!name) return "C";
+  const parts = name.trim().split(" ");
   if (parts.length >= 2) {
     return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
   }
@@ -18,23 +18,34 @@ export function getInitials(name: string): string {
 export function handleExportCSV(filteredApps: Application[]): void {
   if (filteredApps.length === 0) return;
 
-  const headers = ["ID Pendaftaran", "Nama Lengkap", "Email", "Universitas", "No HP", "Status Pendaftaran"];
-  const rows = filteredApps.map(app => [
+  const headers = [
+    "ID Pendaftaran",
+    "Nama Lengkap",
+    "Email",
+    "Instansi Pendidikan",
+    "No HP",
+    "Status Pendaftaran",
+  ];
+  const rows = filteredApps.map((app) => [
     app.id,
     `"${app.namaLengkap}"`,
     `"${app.userEmail}"`,
-    `"${app.universitas}"`,
+    `"${app.instansiPendidikan ?? ""}"`,
     `"${app.noHp}"`,
-    `"${app.status}"`
+    `"${app.status}"`,
   ]);
 
-  const csvContent = "data:text/csv;charset=utf-8," 
-    + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+  const csvContent =
+    "data:text/csv;charset=utf-8," +
+    [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
 
   const encodedUri = encodeURI(csvContent);
   const link = document.createElement("a");
   link.setAttribute("href", encodedUri);
-  link.setAttribute("download", `rekap_pendaftaran_magika_${new Date().toISOString().slice(0,10)}.csv`);
+  link.setAttribute(
+    "download",
+    `rekap_pendaftaran_magika_${new Date().toISOString().slice(0, 10)}.csv`,
+  );
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -44,7 +55,7 @@ export function handleExportCSV(filteredApps: Application[]): void {
  * Cetak lembar rekapitulasi data pendaftar dalam bentuk jendela cetak HTML
  */
 export function handlePrintRekap(filteredApps: Application[]): void {
-  const printWindow = window.open('', '_blank');
+  const printWindow = window.open("", "_blank");
   if (!printWindow) return;
 
   const htmlContent = `
@@ -67,7 +78,7 @@ export function handlePrintRekap(filteredApps: Application[]): void {
       </head>
       <body>
         <h2>REKAPITULASI DATA PENDAFTAR MAGANG - KECAMATAN CICALENGKA</h2>
-        <p class="subtitle">Dicetak pada: ${new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+        <p class="subtitle">Dicetak pada: ${new Date().toLocaleDateString("id-ID", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</p>
         
         <table>
           <thead>
@@ -81,16 +92,20 @@ export function handlePrintRekap(filteredApps: Application[]): void {
             </tr>
           </thead>
           <tbody>
-            ${filteredApps.map((app, idx) => `
+            ${filteredApps
+              .map(
+                (app, idx) => `
               <tr>
                 <td>${idx + 1}</td>
                 <td><strong>${app.id}</strong></td>
                 <td>${app.namaLengkap}</td>
                 <td>${app.userEmail}<br/><small>${app.noHp}</small></td>
-                <td>${app.universitas}</td>
-                <td><span class="badge ${app.status === 'Lulus' ? 'lulus' : app.status === 'Ditolak' ? 'ditolak' : 'menunggu'}">${app.status}</span></td>
+                <td>${app.instansiPendidikan ?? "-"}</td>
+                <td><span class="badge ${app.status === "Lulus" ? "lulus" : app.status === "Ditolak" ? "ditolak" : "menunggu"}">${app.status}</span></td>
               </tr>
-            `).join('')}
+            `,
+              )
+              .join("")}
           </tbody>
         </table>
       </body>

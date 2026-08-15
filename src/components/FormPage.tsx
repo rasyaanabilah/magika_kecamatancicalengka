@@ -53,7 +53,9 @@ export default function FormPage({
   const isMahasiswa = kategoriPendaftar === "mahasiswa";
 
   // Step 2: Data Kampus / Sekolah & Akademik
-  const [universitas, setUniversitas] = useState(currentUser.universitas || "");
+  const [instansiPendidikan, setInstansiPendidikan] = useState(
+    currentUser.instansiPendidikan || currentUser.universitas || "",
+  );
   const [nim, setNim] = useState("");
   const [nisn, setNisn] = useState("");
   const [kelas, setKelas] = useState("Kelas XII");
@@ -87,7 +89,7 @@ export default function FormPage({
   };
 
   const validateKampus = () => {
-    if (!universitas) return "Nama Instansi Pendidikan wajib diisi.";
+    if (!instansiPendidikan) return "Nama Instansi Pendidikan wajib diisi.";
     if (kategoriPendaftar === "mahasiswa") {
       if (!nim) return "Nomor Induk Mahasiswa (NIM) wajib diisi.";
       if (!fakultas) return "Fakultas wajib diisi.";
@@ -179,7 +181,7 @@ export default function FormPage({
         kelas: !isMahasiswa ? kelas || "" : "",
         jurusan: !isMahasiswa ? jurusan || "" : "",
 
-        universitas,
+        instansiPendidikan: instansiPendidikan.trim(),
         fakultas: isMahasiswa ? fakultas || "" : "",
         prodi: isMahasiswa ? prodi || "" : jurusan || "",
         semester: isMahasiswa ? semester || "" : kelas || "",
@@ -205,7 +207,7 @@ export default function FormPage({
         if (currentUser && currentUser.role === "student") {
           const updatedUser = {
             ...currentUser,
-            universitas: newApplication.universitas,
+            instansiPendidikan: newApplication.instansiPendidikan,
             prodi: newApplication.prodi,
             noHp: newApplication.noHp,
           };
@@ -223,7 +225,7 @@ export default function FormPage({
 
       // WhatsApp Admin integration
       try {
-        const message = `Hallo Admin, saya pendaftar baru.\nNama: ${namaLengkap}\nInstansi: ${universitas}\nAlamat: ${alamatLengkap}\nTerima kasih`;
+        const message = `Hallo Admin, saya pendaftar baru.\nNama: ${namaLengkap}\nInstansi: ${instansiPendidikan}\nAlamat: ${alamatLengkap}\nTerima kasih`;
         const waLink = `https://wa.me/6283844165405?text=${encodeURIComponent(message)}`;
         window.location.href = waLink;
       } catch (waErr: any) {
@@ -475,7 +477,7 @@ export default function FormPage({
                     <p className="text-xs text-slate-500 mt-1">
                       {kategoriPendaftar === "siswa"
                         ? "Lengkapi data sekolah tempat Anda saat ini menempuh studi (SMA/SMK/MA)."
-                        : "Lengkapi data perguruan tinggi tempat Anda saat ini menempuh studi (Universitas/Institut/Politeknik)."}
+                        : "Lengkapi data instansi pendidikan tempat Anda saat ini menempuh studi."}
                     </p>
                   </div>
 
@@ -483,13 +485,15 @@ export default function FormPage({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
                         <label className="text-xs font-semibold text-slate-700">
-                          Nama Universitas / Kampus{" "}
+                          Nama Instansi Pendidikan{" "}
                           <span className="text-rose-500">*</span>
                         </label>
                         <input
                           type="text"
-                          value={universitas}
-                          onChange={(e) => setUniversitas(e.target.value)}
+                          value={instansiPendidikan}
+                          onChange={(e) =>
+                            setInstansiPendidikan(e.target.value)
+                          }
                           placeholder="Contoh: Universitas Padjadjaran"
                           className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-hidden focus:border-blue-500 focus:bg-white transition-all font-semibold"
                           required
@@ -581,13 +585,15 @@ export default function FormPage({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
                         <label className="text-xs font-semibold text-slate-700">
-                          Nama Sekolah (Instansi Pendidikan){" "}
+                          Nama Instansi Pendidikan{" "}
                           <span className="text-rose-500">*</span>
                         </label>
                         <input
                           type="text"
-                          value={universitas}
-                          onChange={(e) => setUniversitas(e.target.value)}
+                          value={instansiPendidikan}
+                          onChange={(e) =>
+                            setInstansiPendidikan(e.target.value)
+                          }
                           placeholder="Contoh: SMKN 1 Cicalengka"
                           className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-hidden focus:border-blue-500 focus:bg-white transition-all font-semibold"
                           required
@@ -939,10 +945,11 @@ export default function FormPage({
                   <span className="text-slate-400 font-medium">
                     {submittedApp.kategoriPendaftar === "siswa"
                       ? "Asal Sekolah:"
-                      : "Universitas Asal:"}
+                      : "Instansi Pendidikan:"}
                   </span>
                   <div className="font-bold text-slate-800 mt-0.5">
-                    {submittedApp.universitas}
+                    {submittedApp.instansiPendidikan ||
+                      submittedApp.universitas}
                   </div>
                 </div>
                 <div>
