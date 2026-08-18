@@ -43,8 +43,8 @@ export default function StudentGraduation({
     const s = targetSurat || suratKeterangan || studentSurat;
     printLetter({
       tipeSurat: "keterangan_magang",
-      nomorSurat: s?.nomorSurat || "271",
-      tanggalKeluar: s?.tanggalKeluar || "3 Agustus 2026",
+      nomorSurat: s?.nomorSurat || "-",
+      tanggalKeluar: s?.tanggalKeluar || "",
       namaPeserta:
         s?.namaPeserta || application?.namaLengkap || currentUser.namaLengkap,
       nimNisn:
@@ -65,23 +65,23 @@ export default function StudentGraduation({
         application?.universitas ||
         currentUser.instansiPendidikan ||
         currentUser.universitas ||
-        "Universitas Ma'soem",
+        "",
       tanggalMulai:
         s?.tanggalMulai ||
         application?.tanggalMulaiMagang ||
         application?.tanggalMulai ||
-        "1 Juli 2026",
+        "",
       tanggalSelesai:
         s?.tanggalSelesai ||
         application?.tanggalSelesaiMagang ||
         application?.tanggalSelesai ||
-        "31 Agustus 2026",
-      penandatanganNama: s?.penandatanganNama || "Neni Runingdiyah, S.Kom",
-      penandatanganNip: s?.penandatanganNip || "19810924 201004 2 001",
+        "",
+      penandatanganNama: s?.penandatanganNama || "",
+      penandatanganNip: s?.penandatanganNip || "",
       penandatanganJabatan:
-        s?.penandatanganJabatan || "Kasubag Umum dan Kepegawaian",
-      penandatanganInstansi: s?.penandatanganInstansi || "Kecamatan Cicalengka",
-      penandatanganPangkat: s?.penandatanganPangkat || "Penata Tk.I",
+        s?.penandatanganJabatan || "",
+      penandatanganInstansi: s?.penandatanganInstansi || "",
+      penandatanganPangkat: s?.penandatanganPangkat || "",
     });
   };
 
@@ -94,80 +94,49 @@ export default function StudentGraduation({
       list = [
         {
           nama: application?.namaLengkap || currentUser.namaLengkap,
-          nimNisn: application?.nim || application?.nisn || "-",
-          jurusan: application?.prodi || application?.jurusan || "-",
+          nimNisn: application?.nim || application?.nisn || "",
+          jurusan: application?.prodi || application?.jurusan || "",
           instansi:
-            application?.instansiPendidikan ?? application?.universitas ?? "-",
+            application?.instansiPendidikan ?? application?.universitas ?? "",
         },
       ];
     }
 
     printLetter({
       tipeSurat: "balasan",
-      nomorSurat:
-        s?.nomorSurat ||
-        application?.suratPengantarNo ||
-        "400.14.5.4/270/Sekret",
+      nomorSurat: s?.nomorSurat || application?.suratPengantarNo || "",
       tanggalKeluar:
-        s?.tanggalKeluar ||
-        application?.suratPengantarTanggal ||
-        "31 Maret 2026",
-      lampiran: s?.lampiran || application?.suratPengantarLampiran || "-",
+        s?.tanggalKeluar || application?.suratPengantarTanggal || "",
+      lampiran: s?.lampiran || application?.suratPengantarLampiran || "",
       perihal:
-        s?.perihal ||
-        application?.suratPengantarPerihal ||
-        "Balasan Permohonan Izin Praktik Adaptasi Lapangan",
-      sifat: s?.sifat || application?.suratPengantarSifat || "Penting / Segera",
+        s?.perihal || application?.suratPengantarPerihal || "",
+      sifat: s?.sifat || application?.suratPengantarSifat || "",
       penandatanganNama:
-        s?.penandatanganNama ||
-        application?.suratPenandatanganNama ||
-        "CUCU HIDAYAT, S.H., M.M.",
+        s?.penandatanganNama || application?.suratPenandatanganNama || "",
       penandatanganJabatan:
-        s?.penandatanganJabatan ||
-        application?.suratPenandatanganJabatan ||
-        "CAMAT",
+        s?.penandatanganJabatan || application?.suratPenandatanganJabatan || "",
       penandatanganNip:
-        s?.penandatanganNip ||
-        application?.suratPenandatanganNip ||
-        "19710731 199811 1 001",
+        s?.penandatanganNip || application?.suratPenandatanganNip || "",
       kepadaJabatan:
-        s?.kepadaJabatan ||
-        application?.suratKepadaJabatan ||
-        "Dekan / Pimpinan",
+        s?.kepadaJabatan || application?.suratKepadaJabatan || "",
       kepadaInstansi:
-        s?.kepadaInstansi ||
-        application?.suratKepadaInstansi ||
-        application?.instansiPendidikan ||
-        application?.universitas ||
-        "Instansi Pendidikan",
-      tempat: s?.tempat || application?.suratTempat || "Tempat",
+        s?.kepadaInstansi || application?.suratKepadaInstansi || application?.instansiPendidikan || application?.universitas || "",
+      tempat: s?.tempat || application?.suratTempat || "",
       rujukanPengirim:
-        s?.rujukanPengirim ||
-        application?.rujukanPengirim ||
-        "Dekan / Pimpinan",
+        s?.rujukanPengirim || application?.rujukanPengirim || "",
       rujukanInstansi:
-        s?.rujukanInstansi ||
-        application?.rujukanInstansi ||
-        application?.instansiPendidikan ||
-        application?.universitas ||
-        "Instansi",
+        s?.rujukanInstansi || application?.rujukanInstansi || application?.instansiPendidikan || application?.universitas || "",
       rujukanNo:
-        s?.rujukanNo || application?.rujukanNo || "267/FKOM-UM/III/2026",
-      rujukanTgl: s?.rujukanTgl || application?.rujukanTgl || "30 Maret 2026",
+        s?.rujukanNo || application?.rujukanNo || "",
+      rujukanTgl: s?.rujukanTgl || application?.rujukanTgl || "",
       rujukanPerihal:
-        s?.rujukanPerihal ||
-        application?.rujukanPerihal ||
-        "Izin Praktik Adaptasi Lapangan",
+        s?.rujukanPerihal || application?.rujukanPerihal || "",
       isiSurat:
-        s?.isiSurat ||
-        application?.suratPengantarIsi ||
-        `Sehubungan hal tersebut, pada prinsipnya kami tidak berkeberatan yang bersangkutan Melakukan Praktik Adaptasi Lapangan terhitung tanggal ${application?.tanggalMulai || "1 Juli 2026"} Sampai ${application?.tanggalSelesai || "28 Juli 2026"} sepanjang memenuhi persyaratan normatif.`,
+        s?.isiSurat || application?.suratPengantarIsi || "",
       tembusan:
-        s?.tembusan ||
-        application?.suratTembusan ||
-        "1. Kepala Badan Kesbangpol Kabupaten Bandung.",
+        s?.tembusan || application?.suratTembusan || "",
       daftarPesertaSurat: list,
-      kategoriPendaftar: application?.kategoriPendaftar || "mahasiswa",
+      kategoriPendaftar: application?.kategoriPendaftar || "",
     });
   };
 
@@ -313,4 +282,4 @@ export default function StudentGraduation({
       )}
     </div>
   );
-}
+} 

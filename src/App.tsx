@@ -28,7 +28,7 @@ import StudentDashboard from "./components/student/StudentDashboard.tsx";
 import AdminDashboard from "./components/admin/AdminDashboard.tsx";
 import CamatDashboard from "./components/camat/CamatDashboard.tsx";
 import TrackPage from "./components/TrackPage.tsx";
-import { Application, User, ApplicationStatus } from "./types.ts";
+import { Application, Surat, User, ApplicationStatus } from "./types.ts";
 import { db, auth, uploadToStorage } from "./firebase.ts";
 import {
   signInWithEmailAndPassword,
@@ -61,7 +61,7 @@ export default function App() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [users, setUsers] = useState<User[]>([]);
 
-  const [suratList, setSuratList] = useState<any[]>([]);
+  const [suratList, setSuratList] = useState<Surat[]>([]);
 
   const [whatsappLink, setWhatsappLink] = useState<string>(
     "https://chat.whatsapp.com/mock-magika-cicalengka",

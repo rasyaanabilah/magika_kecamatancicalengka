@@ -18,14 +18,14 @@ import {
   Trash2,
   Award,
 } from "lucide-react";
-import { Application, User } from "../../types";
+import { Application, Surat, SuratParticipant, User } from "../../types";
 import { printLetter } from "../../utils/printLetter";
 
 interface KelolaSuratProps {
   applications: Application[];
   users: User[];
-  suratList: any[];
-  onCreateSurat: (payload: any) => Promise<void>;
+  suratList: Surat[];
+  onCreateSurat: (payload: Record<string, unknown>) => Promise<void>;
   onUpdateApplication: (app: Application) => void | Promise<void>;
   onDeleteSurat?: (id: string) => Promise<void>;
 }
@@ -54,6 +54,38 @@ export default function KelolaSurat({
   );
   const [actionSuccessMsg, setActionSuccessMsg] = useState("");
 
+  const getNomorUrutFromSurat = (nomorSurat?: string): number => {
+    if (!nomorSurat) return 0;
+    const match = nomorSurat.match(/\d+/g);
+    if (!match || match.length === 0) return 0;
+    const lastMatch = match[match.length - 1];
+    const parsed = Number(lastMatch);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+  const getNextNomorUrut = (tipe: "balasan" | "keterangan_magang"): string => {
+    const maxSuratNumber = suratList.reduce((highest, surat) => {
+      if (!surat || surat.tipeSurat !== tipe) {
+        return highest;
+      }
+
+      return Math.max(highest, getNomorUrutFromSurat(surat.nomorSurat));
+    }, 0);
+
+    return String(maxSuratNumber + 1);
+  };
+
+  const formatNomorBalasanValue = (value: string): string => {
+    if (!value) return "400.14.5.4/1/Sekret";
+    const cleanValue = value
+      .replace(/^400\.14\.5\.4\//i, "")
+      .replace(/\/Sekret$/i, "");
+
+    return cleanValue
+      ? `400.14.5.4/${cleanValue}/Sekret`
+      : "400.14.5.4/1/Sekret";
+  };
+
   // Letter Type Selector: 'balasan' (Tipe A) vs 'keterangan_magang' (Tipe B)
   const [tipeSurat, setTipeSurat] = useState<"balasan" | "keterangan_magang">(
     "balasan",
@@ -68,38 +100,32 @@ export default function KelolaSurat({
     useState<Application | null>(null);
 
   // === TIPE A: SURAT BALASAN FIELDS ===
-  const [suratNo, setSuratNo] = useState("400.14.5.4/270/Sekret");
-  const [suratTgl, setSuratTgl] = useState("31 Maret 2026");
-  const [suratSifat, setSuratSifat] = useState("Biasa");
-  const [suratLampiran, setSuratLampiran] = useState("-");
-  const [suratPerihal, setSuratPerihal] = useState(
-    "Balasan Permohonan Izin Praktik Adaptasi Lapangan",
+  const [suratNo, setSuratNo] = useState(() =>
+    formatNomorBalasanValue(`400.14.5.4/${getNextNomorUrut("balasan")}/Sekret`),
   );
+  const [suratTgl, setSuratTgl] = useState(
+    new Date().toLocaleDateString("id-ID", {
+      day: "numeric", month: "long", year: "numeric",
+    }),
+  );
+  const [suratSifat, setSuratSifat] = useState("");
+  const [suratLampiran, setSuratLampiran] = useState("");
+  const [suratPerihal, setSuratPerihal] = useState("");
 
   // Rujukan
-  const [rujukanPengirim, setRujukanPengirim] = useState(
-    "Dekan Fakultas Komputer",
-  );
-  const [rujukanInstansi, setRujukanInstansi] = useState("UNIVERSITAS MA'SOEM");
-  const [rujukanNo, setRujukanNo] = useState("267/FKOM-UM/III/2026");
-  const [rujukanTgl, setRujukanTgl] = useState("30 Maret 2026");
-  const [rujukanPerihal, setRujukanPerihal] = useState(
-    "Izin Praktik Adaptasi Lapangan",
-  );
+  const [rujukanPengirim, setRujukanPengirim] = useState("");
+  const [rujukanInstansi, setRujukanInstansi] = useState("");
+  const [rujukanNo, setRujukanNo] = useState("");
+  const [rujukanTgl, setRujukanTgl] = useState("");
+  const [rujukanPerihal, setRujukanPerihal] = useState("");
 
   // Alamat & Tujuan
-  const [suratKepadaJabatan, setSuratKepadaJabatan] = useState(
-    "Dekan Fakultas Komputer",
-  );
-  const [suratKepadaInstansi, setSuratKepadaInstansi] = useState(
-    "UNIVERSITAS MA'SOEM",
-  );
-  const [suratTempat, setSuratTempat] = useState("Jatinangor");
+  const [suratKepadaJabatan, setSuratKepadaJabatan] = useState("");
+  const [suratKepadaInstansi, setSuratKepadaInstansi] = useState("");
+  const [suratTempat, setSuratTempat] = useState("");
 
   // Isi & TTD Camat
-  const [suratIsi, setSuratIsi] = useState(
-    "Sehubungan hal tersebut, pada prinsipnya kami tidak berkeberatan yang bersangkutan Melakukan Praktik Adaptasi Lapangan terhitung tanggal 1 Juli 2026 Sampai 28 Juli 2026 sepanjang memenuhi persyaratan normatif, tidak bertentangan dengan peraturan perundang-undangan yang berlaku serta tidak mengganggu ketentraman dan ketertiban umum.",
-  );
+  const [suratIsi, setSuratIsi] = useState("") ;
   const [suratPenandatanganNama, setSuratPenandatanganNama] = useState(
     "CUCU HIDAYAT, S.H., M.M.",
   );
@@ -113,7 +139,9 @@ export default function KelolaSurat({
   );
 
   // === TIPE B: SURAT KETERANGAN MAGANG KERJA FIELDS ===
-  const [suratNoKeterangan, setSuratNoKeterangan] = useState("271");
+  const [suratNoKeterangan, setSuratNoKeterangan] = useState(() =>
+    getNextNomorUrut("keterangan_magang"),
+  );
   const [tglTerbitKeterangan, setTglTerbitKeterangan] =
     useState("3 Agustus 2026");
   const [pesertaNama, setPesertaNama] = useState("");
@@ -155,15 +183,15 @@ export default function KelolaSurat({
       const firstP = appOrSurat.daftarPesertaSurat?.[0] || {};
       printLetter({
         tipeSurat: "keterangan_magang",
-        nomorSurat: appOrSurat.nomorSurat || "271",
-        tanggalKeluar: appOrSurat.tanggalKeluar || "3 Agustus 2026",
-        namaPeserta: appOrSurat.namaPeserta || firstP.nama || "Peserta Magang",
+        nomorSurat: appOrSurat.nomorSurat || "-",
+        tanggalKeluar: appOrSurat.tanggalKeluar || "",
+        namaPeserta: appOrSurat.namaPeserta || firstP.nama || "",
         nimNisn: appOrSurat.nimNisn || firstP.nimNisn || "-",
         prodiJurusan: appOrSurat.prodiJurusan || firstP.jurusan || "-",
         instansiPendidikan:
           appOrSurat.instansiPendidikan || firstP.instansi || "-",
-        tanggalMulai: appOrSurat.tanggalMulai || "1 Juli 2026",
-        tanggalSelesai: appOrSurat.tanggalSelesai || "31 Agustus 2026",
+        tanggalMulai: appOrSurat.tanggalMulai || "",
+        tanggalSelesai: appOrSurat.tanggalSelesai || "",
         penandatanganNama:
           appOrSurat.penandatanganNama || "Neni Runingdiyah, S.Kom",
         penandatanganNip:
@@ -181,7 +209,7 @@ export default function KelolaSurat({
       } else {
         list = [
           {
-            nama: appOrSurat.namaLengkap || "Peserta Magang",
+            nama: appOrSurat.namaLengkap || "",
             nimNisn: appOrSurat.nim || appOrSurat.nisn || "-",
             jurusan: appOrSurat.prodi || appOrSurat.jurusan || "-",
             instansi:
@@ -192,21 +220,18 @@ export default function KelolaSurat({
 
       printLetter({
         tipeSurat: "balasan",
-        nomorSurat:
-          appOrSurat.nomorSurat ||
-          appOrSurat.suratPengantarNo ||
-          "400.14.5.4/270/Sekret",
+        nomorSurat: appOrSurat.nomorSurat || appOrSurat.suratPengantarNo || "-",
         tanggalKeluar:
           appOrSurat.tanggalKeluar ||
           appOrSurat.suratPengantarTanggal ||
-          "31 Maret 2026",
+          "-",
         lampiran:
           appOrSurat.lampiran || appOrSurat.suratPengantarLampiran || "-",
         perihal:
           appOrSurat.perihal ||
           appOrSurat.suratPengantarPerihal ||
-          "Balasan Permohonan Izin Praktik Adaptasi Lapangan",
-        sifat: appOrSurat.sifat || appOrSurat.suratPengantarSifat || "Biasa",
+          "-",
+        sifat: appOrSurat.sifat || appOrSurat.suratPengantarSifat || "-",
         penandatanganNama:
           appOrSurat.penandatanganNama ||
           appOrSurat.suratPenandatanganNama ||
@@ -230,10 +255,10 @@ export default function KelolaSurat({
         tempat: appOrSurat.tempat || appOrSurat.suratTempat || "Tempat",
         rujukanPengirim: appOrSurat.rujukanPengirim || "Dekan / Kepala Sekolah",
         rujukanInstansi: appOrSurat.rujukanInstansi || "Instansi",
-        rujukanNo: appOrSurat.rujukanNo || "267/FKOM-UM/III/2026",
-        rujukanTgl: appOrSurat.rujukanTgl || "30 Maret 2026",
+        rujukanNo: appOrSurat.rujukanNo || "-",
+        rujukanTgl: appOrSurat.rujukanTgl || "-",
         rujukanPerihal:
-          appOrSurat.rujukanPerihal || "Izin Praktik Adaptasi Lapangan",
+          appOrSurat.rujukanPerihal || "-",
         isiSurat: appOrSurat.isiSurat || appOrSurat.suratPengantarIsi || "",
         tembusan:
           appOrSurat.tembusan ||
@@ -252,19 +277,17 @@ export default function KelolaSurat({
           ? applications.find((a) => a.id === selectedRecipients[0])
           : autocompleteSelectedApp;
 
-      const nama = pesertaNama || selectedApp?.namaLengkap || "Ahmad Lazuardi";
+      const nama = pesertaNama || selectedApp?.namaLengkap || "";
       const nim =
-        pesertaNimNisn || selectedApp?.nim || selectedApp?.nisn || "2201010045";
+        pesertaNimNisn || selectedApp?.nim || selectedApp?.nisn || "";
       const prodi =
         pesertaProdiJurusan ||
         selectedApp?.prodi ||
-        selectedApp?.jurusan ||
-        "Teknik Informatika";
+        selectedApp?.jurusan ||"";
       const instansi =
         pesertaInstansiPendidikan ||
         (selectedApp?.instansiPendidikan ??
-          selectedApp?.universitas ??
-          "Universitas Ma'soem");
+          selectedApp?.universitas ?? "");
 
       printLetter({
         tipeSurat: "keterangan_magang",
@@ -334,7 +357,7 @@ export default function KelolaSurat({
             : autocompleteSelectedApp;
 
         const recName =
-          pesertaNama || selectedApp?.namaLengkap || "Ahmad Lazuardi";
+          pesertaNama || selectedApp?.namaLengkap || "";
         const recNim =
           pesertaNimNisn || selectedApp?.nim || selectedApp?.nisn || "-";
         const recProdi =
@@ -346,13 +369,13 @@ export default function KelolaSurat({
           pesertaInstansiPendidikan ||
           (selectedApp?.instansiPendidikan ?? selectedApp?.universitas ?? "-");
 
-        const rawNo = suratNoKeterangan || "271";
+        const rawNo = suratNoKeterangan || "1";
         let formattedNo = rawNo;
         if (
           !rawNo.toLowerCase().includes("sekret") &&
           !rawNo.includes("400.14")
         ) {
-          formattedNo = `400.14.5.4/ ${rawNo} /sekret`;
+          formattedNo = rawNo.replace(/[^0-9]/g, "");
         }
 
         const recipientIds =
@@ -545,26 +568,17 @@ export default function KelolaSurat({
     );
 
     // Auto-fill template values for Tipe A (Surat Balasan)
-    const univName = app.instansiPendidikan ?? app.universitas ?? "";
-    let dekanLabel = "Dekan Fakultas / Pimpinan";
-    let locationLabel = "Bandung";
-
-    if (
-      univName.toLowerCase().includes("ma'soem") ||
-      univName.toLowerCase().includes("masoem")
-    ) {
-      dekanLabel = "Dekan Fakultas Komputer";
-      locationLabel = "Jatinangor";
-    }
-
-    setSuratKepadaJabatan(dekanLabel);
+    const univName = app.instansiPendidikan ?? app.universitas ?? ""; 
     setSuratKepadaInstansi(univName);
-    setSuratTempat(locationLabel);
+    // Field lainnya tetap kosong dan diisi manual oleh Petugas.
+    setSuratKepadaJabatan("");
+    setSuratTempat("");
 
-    setRujukanPengirim(dekanLabel);
-    setRujukanInstansi(univName);
-    setRujukanNo(app.suratPengantarNo || "267/FKOM-UM/III/2026");
-    setRujukanTgl(app.suratPengantarTanggal || "30 Maret 2026");
+    setRujukanPengirim("");
+    setRujukanInstansi("");
+    setRujukanNo("");
+    setRujukanTgl("");
+    setRujukanPerihal("");
 
     setSuratIsi(
       `Sehubungan hal tersebut, pada prinsipnya kami tidak berkeberatan yang bersangkutan Melakukan Praktik Adaptasi Lapangan terhitung tanggal ${app.tanggalMulai || "1 Juli 2026"} Sampai ${app.tanggalSelesai || "28 Juli 2026"} sepanjang memenuhi persyaratan normatif, tidak bertentangan dengan peraturan perundang-undangan yang berlaku serta tidak mengganggu ketentraman dan ketertiban umum.`,
@@ -643,7 +657,7 @@ export default function KelolaSurat({
                   </div>
                   <div className="text-[10px] text-slate-500 mt-0.5 leading-snug">
                     Surat resmi balasan permohonan izin praktik kerja / magang
-                    untuk dikirim ke instansi/sekolah.
+                    untuk dikirim ke Kesbangpol.
                   </div>
                 </div>
               </button>
@@ -1032,7 +1046,7 @@ export default function KelolaSurat({
                       type="text"
                       value={suratNoKeterangan}
                       onChange={(e) => setSuratNoKeterangan(e.target.value)}
-                      placeholder="271"
+                      placeholder="Nomor urut"
                       className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-hidden focus:border-emerald-500"
                     />
                     <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-2 rounded-xl border border-slate-200 shrink-0">
@@ -1263,12 +1277,28 @@ export default function KelolaSurat({
                     <label className="block text-[11px] font-bold text-slate-400 mb-1">
                       Nomor Surat Dinas:
                     </label>
-                    <input
-                      type="text"
-                      value={suratNo}
-                      onChange={(e) => setSuratNo(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-hidden focus:border-blue-500"
-                    />
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-2 rounded-xl border border-slate-200 shrink-0">
+                        400.14.5.4 /
+                      </span>
+                      <input
+                        type="text"
+                        value={suratNo
+                          .replace(/^400\.14\.5\.4\//i, "")
+                          .replace(/\/Sekret$/i, "")}
+                        onChange={(e) =>
+                          setSuratNo(
+                            formatNomorBalasanValue(
+                              `400.14.5.4/${e.target.value}/Sekret`,
+                            ),
+                          )
+                        }
+                        className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-hidden focus:border-blue-500"
+                      />
+                      <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-2 rounded-xl border border-slate-200 shrink-0">
+                        / Sekret
+                      </span>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-[11px] font-bold text-slate-400 mb-1">
@@ -1596,12 +1626,12 @@ export default function KelolaSurat({
                         surat.namaPeserta
                           ?.toLowerCase()
                           .includes(archiveSearchTerm.toLowerCase()) ||
-                        surat.daftarPesertaSurat?.some((p: any) =>
+                        surat.daftarPesertaSurat?.some((p: SuratParticipant) =>
                           p.nama
                             ?.toLowerCase()
                             .includes(archiveSearchTerm.toLowerCase()),
                         ) ||
-                        surat.daftarPesertaSurat?.some((p: any) =>
+                        surat.daftarPesertaSurat?.some((p: SuratParticipant) =>
                           p.instansi
                             ?.toLowerCase()
                             .includes(archiveSearchTerm.toLowerCase()),
@@ -1632,7 +1662,7 @@ export default function KelolaSurat({
                       let namesList =
                         surat.namaPeserta ||
                         surat.daftarPesertaSurat
-                          ?.map((p: any) => p.nama)
+                          ?.map((p: SuratParticipant) => p.nama)
                           .join(", ") ||
                         "Tidak ada nama";
                       let instansiList =
@@ -1640,7 +1670,7 @@ export default function KelolaSurat({
                         Array.from(
                           new Set(
                             surat.daftarPesertaSurat?.map(
-                              (p: any) => p.instansi,
+                              (p: SuratParticipant) => p.instansi,
                             ),
                           ),
                         ).join(", ") ||

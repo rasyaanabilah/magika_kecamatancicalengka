@@ -11,7 +11,7 @@ import {
   X,
   GraduationCap,
 } from "lucide-react";
-import { Application, ApplicationStatus, User } from "../../types";
+import { Application, ApplicationStatus, Surat, User } from "../../types";
 
 // Import modular sub-components
 import DashboardOverview from "./DashboardOverview.tsx";
@@ -41,8 +41,8 @@ interface AdminDashboardProps {
   onAddUser?: (user: User) => void;
   onUpdateUser?: (user: User) => void;
   onDeleteUser?: (id: string) => void;
-  suratList?: any[];
-  onCreateSurat?: (suratPayload: any) => Promise<void>;
+  suratList?: Surat[];
+  onCreateSurat?: (suratPayload: Record<string, unknown>) => Promise<void>;
   onDeleteSurat?: (id: string) => Promise<void>;
 }
 
@@ -57,7 +57,7 @@ export default function AdminDashboard({
   onDeleteApplication = () => {},
   currentUser,
   users = [],
-  onUpdateUser = () => {}, 
+  onUpdateUser = () => {},
   suratList = [],
   onCreateSurat = async () => {},
   onDeleteSurat = async () => {},
@@ -425,9 +425,7 @@ export default function AdminDashboard({
           )}
 
           {/* TAB 6: DAFTAR AKUN */}
-          {activeTab === "kelola-akun" && (
-            <DaftarAkun users={users} />
-          )}
+          {activeTab === "kelola-akun" && <DaftarAkun users={users} />}
 
           {/* TAB 7: SETELAN & PROFIL */}
           {activeTab === "setelan-profil" && currentUser && (

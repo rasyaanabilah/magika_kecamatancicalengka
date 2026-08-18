@@ -122,6 +122,29 @@ export interface User {
   avatarUrl?: string;
 }
 
+export interface SuratParticipant {
+  id: string;
+  email?: string;
+  nama?: string;
+  nimNisn?: string;
+  jurusan?: string;
+  instansi?: string;
+}
+
+export interface Surat {
+  id: string;
+  tipeSurat?: "balasan" | "keterangan_magang";
+  nomorSurat?: string;
+  tanggalKeluar?: string;
+  penerimaIds?: string[];
+  kategoriPendaftar?: "mahasiswa" | "siswa";
+  namaPeserta?: string;
+  instansiPendidikan?: string;
+  perihal?: string;
+  daftarPesertaSurat?: SuratParticipant[];
+  [key: string]: unknown;
+}
+
 /**
  * Prop interface untuk CamatDashboard
  */

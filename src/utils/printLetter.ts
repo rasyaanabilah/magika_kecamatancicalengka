@@ -1,37 +1,37 @@
 // @ts-ignore
-import logoKabBandung from '../assets/images/logo_kab_bandung.png';
+import logoKabBandung from "../assets/images/logo_kab_bandung.png";
 // @ts-ignore
-import ttdCamat from '../assets/images/ttd_camat.png';
+import ttdCamat from "../assets/images/ttd_camat.png";
 // @ts-ignore
-import ttdUmpeg from '../assets/images/ttd_umpeg.png';
+import ttdUmpeg from "../assets/images/ttd_umpeg.png";
 // @ts-ignore
-import capStempel from '../assets/images/cap_stempel.png';
+import capStempel from "../assets/images/cap_stempel.png";
 
 export interface PrintLetterOptions {
-  tipeSurat?: 'balasan' | 'keterangan_magang';
+  tipeSurat?: "balasan" | "keterangan_magang";
   nomorSurat?: string;
   tanggalKeluar?: string;
   perihal?: string;
   sifat?: string;
   lampiran?: string;
-  
+
   // Data Peserta / Penerima
   namaPeserta?: string;
   nimNisn?: string;
   prodiJurusan?: string;
   instansiPendidikan?: string;
-  
+
   // Tanggal Magang (Khusus Surat Keterangan Magang)
   tanggalMulai?: string;
   tanggalSelesai?: string;
-  
+
   // Data Pejabat Penandatangan
   penandatanganNama?: string;
   penandatanganNip?: string;
   penandatanganJabatan?: string;
   penandatanganInstansi?: string;
   penandatanganPangkat?: string;
-  
+
   // Data Tambahan untuk Surat Balasan (Tipe A)
   kepadaJabatan?: string;
   kepadaInstansi?: string;
@@ -43,7 +43,7 @@ export interface PrintLetterOptions {
   rujukanPerihal?: string;
   isiSurat?: string;
   tembusan?: string;
-  
+
   // Bulk peserta untuk Surat Balasan
   daftarPesertaSurat?: Array<{
     nama: string;
@@ -51,7 +51,7 @@ export interface PrintLetterOptions {
     jurusan?: string;
     instansi?: string;
   }>;
-  
+
   kategoriPendaftar?: string;
 }
 
@@ -59,7 +59,7 @@ export interface PrintLetterOptions {
  * Utility untuk melakukan pencetakan PDF / Pratinjau Cetak Surat Resmi Kecamatan Cicalengka
  */
 export function printLetter(data: PrintLetterOptions) {
-  const isKeteranganMagang = data.tipeSurat === 'keterangan_magang';
+  const isKeteranganMagang = data.tipeSurat === "keterangan_magang";
 
   if (isKeteranganMagang) {
     printSuratKeteranganMagang(data);
@@ -73,31 +73,47 @@ export function printLetter(data: PrintLetterOptions) {
  */
 function printSuratKeteranganMagang(data: PrintLetterOptions) {
   // Format nomor surat
-  let rawNo = data.nomorSurat || '271';
-  let formattedNo = rawNo;
-  if (!rawNo.toLowerCase().includes('sekret') && !rawNo.includes('400.14')) {
-    formattedNo = `400.14.5.4/ ${rawNo} /sekret`;
+  const rawNo = (data.nomorSurat || "").trim();
+  let formattedNo = rawNo || "Nomor belum diisi";
+  if (
+    !rawNo.toLowerCase().includes("sekret") &&
+    !rawNo.includes("400.14") &&
+    rawNo
+  ) {
+    formattedNo = `400.14.5.4/${rawNo}/Sekret`;
   }
 
-  const tglTerbit = data.tanggalKeluar || '3 Agustus 2026';
-  
-  // Data Peserta
-  const pesertaNama = data.namaPeserta || (data.daftarPesertaSurat && data.daftarPesertaSurat[0]?.nama) || 'Ahmad Lazuardi';
-  const pesertaNim = data.nimNisn || (data.daftarPesertaSurat && data.daftarPesertaSurat[0]?.nimNisn) || '2201010045';
-  const pesertaProdi = data.prodiJurusan || (data.daftarPesertaSurat && data.daftarPesertaSurat[0]?.jurusan) || 'Teknik Informatika';
-  const pesertaInstansi = data.instansiPendidikan || (data.daftarPesertaSurat && data.daftarPesertaSurat[0]?.instansi) || "Universitas Ma'soem";
-  
-  // Data Tanggal Magang
-  const tglMulai = data.tanggalMulai || '1 Juli 2026';
-  const tglSelesai = data.tanggalSelesai || '31 Agustus 2026';
+  const tglTerbit = data.tanggalKeluar || "";
 
-  // Data Pejabat Penandatangan (Default: Kasubag Umum dan Kepegawaian)
-  const pNama = data.penandatanganNama || 'Neni Runingdiyah, S.Kom';
+  // Data Peserta
+  const pesertaNama =
+    data.namaPeserta ||
+    (data.daftarPesertaSurat && data.daftarPesertaSurat[0]?.nama) ||
+    "";
+  const pesertaNim =
+    data.nimNisn ||
+    (data.daftarPesertaSurat && data.daftarPesertaSurat[0]?.nimNisn) ||
+    "";
+  const pesertaProdi =
+    data.prodiJurusan ||
+    (data.daftarPesertaSurat && data.daftarPesertaSurat[0]?.jurusan) ||
+    "";
+  const pesertaInstansi =
+    data.instansiPendidikan ||
+    (data.daftarPesertaSurat && data.daftarPesertaSurat[0]?.instansi) ||
+    "";
+
+  // Data Tanggal Magang
+  const tglMulai = data.tanggalMulai || "";
+  const tglSelesai = data.tanggalSelesai || "";
+
+  // Data Pejabat Penandatangan
+  const pNama = data.penandatanganNama || "";
   const pNamaUpper = pNama.toUpperCase();
-  const pNip = data.penandatanganNip || '19810924 201004 2 001';
-  const pJabatan = data.penandatanganJabatan || 'Kasubag Umum dan Kepegawaian';
-  const pInstansi = data.penandatanganInstansi || 'Kecamatan Cicalengka';
-  const pPangkat = data.penandatanganPangkat || 'Penata Tk.I';
+  const pNip = data.penandatanganNip || "";
+  const pJabatan = data.penandatanganJabatan || "";
+  const pInstansi = data.penandatanganInstansi || "";
+  const pPangkat = data.penandatanganPangkat || "";
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -276,7 +292,7 @@ function printSuratKeteranganMagang(data: PrintLetterOptions) {
     </html>
   `;
 
-  const printWindow = window.open('', '_blank');
+  const printWindow = window.open("", "_blank");
   if (printWindow) {
     printWindow.document.write(htmlContent);
     printWindow.document.close();
@@ -289,44 +305,50 @@ function printSuratKeteranganMagang(data: PrintLetterOptions) {
 function printSuratBalasan(data: PrintLetterOptions) {
   let list = data.daftarPesertaSurat || [];
   if (list.length === 0 && data.namaPeserta) {
-    list = [{
-      nama: data.namaPeserta,
-      nimNisn: data.nimNisn || '-',
-      jurusan: data.prodiJurusan || '-',
-      instansi: data.instansiPendidikan || '-'
-    }];
+    list = [
+      {
+        nama: data.namaPeserta,
+        nimNisn: data.nimNisn || "",
+        jurusan: data.prodiJurusan || "",
+        instansi: data.instansiPendidikan || "",
+      },
+    ];
   }
 
-  const sNo = data.nomorSurat || '400.14.5.4/270/Sekret';
-  const sTgl = data.tanggalKeluar || '31 Maret 2026';
-  const sLampiran = data.lampiran || '-';
-  const sPerihal = data.perihal || 'Balasan Permohonan Izin Praktik Adaptasi Lapangan';
-  const sSifat = data.sifat || 'Biasa';
-  const sNama = data.penandatanganNama || 'CUCU HIDAYAT, S.H., M.M.';
-  const sJabatan = data.penandatanganJabatan || 'CAMAT';
-  const sNip = data.penandatanganNip || '19710731 199811 1 001';
-  
-  const sKepadaJabatan = data.kepadaJabatan || 'Dekan / Pimpinan';
-  const sKepadaInstansi = data.kepadaInstansi || 'Instansi';
-  const sTempat = data.tempat || 'Tempat';
-  
-  const rPengirim = data.rujukanPengirim || 'Dekan / Kepala Sekolah';
-  const rInstansi = data.rujukanInstansi || 'Instansi';
-  const rNo = data.rujukanNo || '267/FKOM-UM/III/2026';
-  const rTgl = data.rujukanTgl || '30 Maret 2026';
-  const rPerihal = data.rujukanPerihal || 'Izin Praktik Adaptasi Lapangan';
-  
-  const sIsi = data.isiSurat || 'Sehubungan hal tersebut, pada prinsipnya kami tidak berkeberatan yang bersangkutan Melakukan Praktik Adaptasi Lapangan terhitung tanggal 1 Juli 2026 Sampai 28 Juli 2026 sepanjang memenuhi persyaratan normatif, tidak bertentangan dengan peraturan perundang-undangan yang berlaku serta tidak mengganggu ketentraman dan ketertiban umum.';
-  const sTembusanList = data.tembusan || '1. Kepala Badan Kesbangpol Kabupaten Bandung.';
+  const sNo = data.nomorSurat || "";
+  const sTgl = data.tanggalKeluar || "";
+  const sLampiran = data.lampiran || "";
+  const sPerihal = data.perihal || "";
+  const sSifat = data.sifat || "";
+  const sNama = data.penandatanganNama || "";
+  const sJabatan = data.penandatanganJabatan || "";
+  const sNip = data.penandatanganNip || "";
 
-  const studentRowsHtml = list.map((st, i) => `
+  const sKepadaJabatan = data.kepadaJabatan || "";
+  const sKepadaInstansi = data.kepadaInstansi || "";
+  const sTempat = data.tempat || "";
+
+  const rPengirim = data.rujukanPengirim || "";
+  const rInstansi = data.rujukanInstansi || "";
+  const rNo = data.rujukanNo || "";
+  const rTgl = data.rujukanTgl || "";
+  const rPerihal = data.rujukanPerihal || "";
+
+  const sIsi = data.isiSurat || "";
+  const sTembusanList = data.tembusan || "";
+
+  const studentRowsHtml = list
+    .map(
+      (st, i) => `
     <tr>
       <td style="border: 1px solid #000; padding: 6px 10px; text-align: center;">${i + 1}</td>
       <td style="border: 1px solid #000; padding: 6px 10px; font-weight: bold;">${st.nama}</td>
-      <td style="border: 1px solid #000; padding: 6px 10px; text-align: center; font-family: monospace;">${st.nimNisn || '-'}</td>
-      <td style="border: 1px solid #000; padding: 6px 10px;">${st.jurusan || '-'}</td>
+      <td style="border: 1px solid #000; padding: 6px 10px; text-align: center; font-family: monospace;">${st.nimNisn || ""}</td>
+      <td style="border: 1px solid #000; padding: 6px 10px;">${st.jurusan || ""}</td>
     </tr>
-  `).join('');
+  `,
+    )
+    .join("");
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -445,9 +467,9 @@ function printSuratBalasan(data: PrintLetterOptions) {
     </html>
   `;
 
-  const printWindow = window.open('', '_blank');
+  const printWindow = window.open("", "_blank");
   if (printWindow) {
     printWindow.document.write(htmlContent);
     printWindow.document.close();
   }
-}
+} 
