@@ -105,7 +105,9 @@ export default function KelolaSurat({
   );
   const [suratTgl, setSuratTgl] = useState(
     new Date().toLocaleDateString("id-ID", {
-      day: "numeric", month: "long", year: "numeric",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     }),
   );
   const [suratSifat, setSuratSifat] = useState("");
@@ -125,7 +127,7 @@ export default function KelolaSurat({
   const [suratTempat, setSuratTempat] = useState("");
 
   // Isi & TTD Camat
-  const [suratIsi, setSuratIsi] = useState("") ;
+  const [suratIsi, setSuratIsi] = useState("");
   const [suratPenandatanganNama, setSuratPenandatanganNama] = useState(
     "CUCU HIDAYAT, S.H., M.M.",
   );
@@ -222,15 +224,10 @@ export default function KelolaSurat({
         tipeSurat: "balasan",
         nomorSurat: appOrSurat.nomorSurat || appOrSurat.suratPengantarNo || "-",
         tanggalKeluar:
-          appOrSurat.tanggalKeluar ||
-          appOrSurat.suratPengantarTanggal ||
-          "-",
+          appOrSurat.tanggalKeluar || appOrSurat.suratPengantarTanggal || "-",
         lampiran:
           appOrSurat.lampiran || appOrSurat.suratPengantarLampiran || "-",
-        perihal:
-          appOrSurat.perihal ||
-          appOrSurat.suratPengantarPerihal ||
-          "-",
+        perihal: appOrSurat.perihal || appOrSurat.suratPengantarPerihal || "-",
         sifat: appOrSurat.sifat || appOrSurat.suratPengantarSifat || "-",
         penandatanganNama:
           appOrSurat.penandatanganNama ||
@@ -257,8 +254,7 @@ export default function KelolaSurat({
         rujukanInstansi: appOrSurat.rujukanInstansi || "Instansi",
         rujukanNo: appOrSurat.rujukanNo || "-",
         rujukanTgl: appOrSurat.rujukanTgl || "-",
-        rujukanPerihal:
-          appOrSurat.rujukanPerihal || "-",
+        rujukanPerihal: appOrSurat.rujukanPerihal || "-",
         isiSurat: appOrSurat.isiSurat || appOrSurat.suratPengantarIsi || "",
         tembusan:
           appOrSurat.tembusan ||
@@ -278,16 +274,12 @@ export default function KelolaSurat({
           : autocompleteSelectedApp;
 
       const nama = pesertaNama || selectedApp?.namaLengkap || "";
-      const nim =
-        pesertaNimNisn || selectedApp?.nim || selectedApp?.nisn || "";
+      const nim = pesertaNimNisn || selectedApp?.nim || selectedApp?.nisn || "";
       const prodi =
-        pesertaProdiJurusan ||
-        selectedApp?.prodi ||
-        selectedApp?.jurusan ||"";
+        pesertaProdiJurusan || selectedApp?.prodi || selectedApp?.jurusan || "";
       const instansi =
         pesertaInstansiPendidikan ||
-        (selectedApp?.instansiPendidikan ??
-          selectedApp?.universitas ?? "");
+        (selectedApp?.instansiPendidikan ?? selectedApp?.universitas ?? "");
 
       printLetter({
         tipeSurat: "keterangan_magang",
@@ -351,23 +343,62 @@ export default function KelolaSurat({
 
     try {
       if (tipeSurat === "keterangan_magang") {
-        const selectedApp =
+        const resolvedFromSelection =
           selectedRecipients.length > 0
-            ? applications.find((a) => a.id === selectedRecipients[0])
-            : autocompleteSelectedApp;
+            ? selectedRecipients
+                .map((recId) => applications.find((a) => a.id === recId))
+                .filter((app): app is Application => !!app)
+            : [];
 
-        const recName =
-          pesertaNama || selectedApp?.namaLengkap || "";
+        const selectedApp =
+          resolvedFromSelection[0] || autocompleteSelectedApp || null;
+
+        const matchedAppByName =
+          !selectedApp && pesertaNama
+            ? applications.find(
+                (app) =>
+                  app.namaLengkap?.trim().toLowerCase() ===
+                  pesertaNama.trim().toLowerCase(),
+              ) ||
+              applications.find((app) =>
+                app.namaLengkap
+                  ?.toLowerCase()
+                  .includes(pesertaNama.trim().toLowerCase()),
+              )
+            : null;
+
+        const recipientApps =
+          resolvedFromSelection.length > 0
+            ? resolvedFromSelection
+            : selectedApp
+              ? [selectedApp]
+              : matchedAppByName
+                ? [matchedAppByName]
+                : [];
+
+        if (recipientApps.length === 0) {
+          alert(
+            "Penerima surat keterangan tidak ditemukan. Pilih nama peserta dari daftar yang tersedia terlebih dahulu.",
+          );
+          return;
+        }
+
+        const recName = pesertaNama || recipientApps[0]?.namaLengkap || "";
         const recNim =
-          pesertaNimNisn || selectedApp?.nim || selectedApp?.nisn || "-";
+          pesertaNimNisn ||
+          recipientApps[0]?.nim ||
+          recipientApps[0]?.nisn ||
+          "-";
         const recProdi =
           pesertaProdiJurusan ||
-          selectedApp?.prodi ||
-          selectedApp?.jurusan ||
+          recipientApps[0]?.prodi ||
+          recipientApps[0]?.jurusan ||
           "-";
         const recInstansi =
           pesertaInstansiPendidikan ||
-          (selectedApp?.instansiPendidikan ?? selectedApp?.universitas ?? "-");
+          (recipientApps[0]?.instansiPendidikan ??
+            recipientApps[0]?.universitas ??
+            "-");
 
         const rawNo = suratNoKeterangan || "1";
         let formattedNo = rawNo;
@@ -378,12 +409,22 @@ export default function KelolaSurat({
           formattedNo = rawNo.replace(/[^0-9]/g, "");
         }
 
-        const recipientIds =
-          selectedRecipients.length > 0
-            ? selectedRecipients
-            : selectedApp
-              ? [selectedApp.id]
-              : [];
+        const recipientIds = Array.from(
+          new Set(
+            recipientApps.flatMap((app) => {
+              const studentUser = users.find(
+                (u) => u.email.toLowerCase() === app.userEmail.toLowerCase(),
+              );
+
+              return [
+                app.id,
+                app.userEmail?.toLowerCase(),
+                studentUser?.id,
+                studentUser?.email?.toLowerCase(),
+              ].filter(Boolean);
+            }),
+          ),
+        );
 
         const payload = {
           tipeSurat: "keterangan_magang",
@@ -402,14 +443,19 @@ export default function KelolaSurat({
           penandatanganJabatan: penandatanganJabatanKet,
           penandatanganInstansi: penandatanganInstansiKet,
           penandatanganPangkat: penandatanganPangkatKet,
-          daftarPesertaSurat: [
-            {
-              nama: recName,
-              nimNisn: recNim,
-              jurusan: recProdi,
-              instansi: recInstansi,
-            },
-          ],
+          daftarPesertaSurat: recipientApps.map((app) => {
+            const studentUser = users.find(
+              (u) => u.email.toLowerCase() === app.userEmail.toLowerCase(),
+            );
+            return {
+              id: studentUser?.id || app.id,
+              email: app.userEmail?.toLowerCase(),
+              nama: app.namaLengkap,
+              nimNisn: app.nim || app.nisn || "-",
+              jurusan: app.prodi || app.jurusan || "-",
+              instansi: app.instansiPendidikan ?? app.universitas ?? "-",
+            };
+          }),
         };
 
         // 1. Save letter in database
@@ -568,7 +614,7 @@ export default function KelolaSurat({
     );
 
     // Auto-fill template values for Tipe A (Surat Balasan)
-    const univName = app.instansiPendidikan ?? app.universitas ?? ""; 
+    const univName = app.instansiPendidikan ?? app.universitas ?? "";
     setSuratKepadaInstansi(univName);
     // Field lainnya tetap kosong dan diisi manual oleh Petugas.
     setSuratKepadaJabatan("");
