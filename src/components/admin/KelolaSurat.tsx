@@ -401,13 +401,10 @@ export default function KelolaSurat({
             "-");
 
         const rawNo = suratNoKeterangan || "1";
-        let formattedNo = rawNo;
-        if (
-          !rawNo.toLowerCase().includes("sekret") &&
-          !rawNo.includes("400.14")
-        ) {
-          formattedNo = rawNo.replace(/[^0-9]/g, "");
-        }
+        const formattedNo =
+          rawNo.includes("400.14.5.4")
+            ? rawNo
+            : `400.14.5.4/${rawNo.replace(/[^0-9]/g, "")}/Sekret`;
 
         const recipientIds = Array.from(
           new Set(
@@ -458,24 +455,13 @@ export default function KelolaSurat({
           }),
         };
 
-        // 1. Save letter in database
-        await onCreateSurat(payload);
+      // Simpan Surat Keterangan ke database.
+      // Surat Keterangan TIDAK mengubah status pendaftar.
+      await onCreateSurat(payload);
 
-        // 2. Set status to 'Selesai' or 'Lulus' for completed internship
-        const promises = recipientIds.map(async (recId) => {
-          const app = applications.find((a) => a.id === recId);
-          if (app) {
-            await onUpdateApplication({
-              ...app,
-              status: "Selesai",
-            });
-          }
-        });
-        await Promise.all(promises);
-
-        setActionSuccessMsg(
-          `Surat Keterangan Magang Kerja (${formattedNo}) berhasil diterbitkan untuk ${recName}.`,
-        );
+      setActionSuccessMsg(
+        `Surat Keterangan Magang Kerja (${formattedNo}) berhasil diterbitkan untuk ${recName}. Status peserta tidak diubah.`,
+      );
       } else {
         const list = selectedRecipients
           .map((id) => (id ? applications.find((a) => a.id === id) : undefined))

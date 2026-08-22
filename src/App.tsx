@@ -1063,27 +1063,26 @@ export default function App() {
     try {
       if (isOfflineMode) {
         const mockId = `surat-mock-${Date.now()}`;
+
         const mockSurat = {
           ...payload,
           id: mockId,
           createdAt: new Date().toISOString(),
         };
+
         setSuratList((prev) => [mockSurat, ...prev]);
         return;
       }
-      const docRef = await addDoc(collection(db, "surat"), {
+
+      await addDoc(collection(db, "surat"), {
         ...payload,
         createdAt: serverTimestamp(),
       });
-      console.log("Document written with ID: ", docRef.id);
 
-      // Sinkronkan data surat lokal juga agar pengguna langsung melihat perubahan tanpa menunggu reload.
-      const freshSurat = {
-        ...payload,
-        id: docRef.id,
-        createdAt: new Date().toISOString(),
-      };
-      setSuratList((prev) => [freshSurat, ...prev]);
+      console.log("Surat berhasil disimpan ke Firestore.");
+      
+      // Tidak perlu setSuratList di sini.
+      // onSnapshot akan otomatis memperbarui suratList.
     } catch (err) {
       console.error("Error creating letter in Firestore:", err);
       throw err;

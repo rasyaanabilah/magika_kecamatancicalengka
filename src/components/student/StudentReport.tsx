@@ -66,8 +66,7 @@ export default function StudentReport({
           ringkasan: laporanRingkasan,
           fileName: laporanFile.trim(),
           fileSize: 'Google Drive Link',
-          uploadedAt: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
-          status: 'Menunggu',
+          uploadedAt: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }), 
           fileData: laporanFile.trim()
         }
       };

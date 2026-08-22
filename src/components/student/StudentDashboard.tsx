@@ -144,8 +144,7 @@ export default function StudentDashboard({
             </button>
 
             {/* Dokumen Kelulusan (Only if Accepted and NOT siswa) */}
-            {application &&
-              application.status === "Lulus" &&
+            {application && ["Lulus", "Selesai"].includes(application.status) &&
               application.kategoriPendaftar !== "siswa" && (
                 <button
                   onClick={() => setActiveTab("kelulusan")}
