@@ -56,13 +56,16 @@ service cloud.firestore {
 
       allow list: if isSignedIn() && (
         isStaff(request.auth.uid)
+        || resource.data.userId == request.auth.uid
         || resource.data.userEmail == request.auth.token.email
+        || resource.data.userEmail == request.auth.token.email.lower()
       );
 
       allow create: if isSignedIn() && isValidId(pendaftarId)
         && request.resource.data.id == pendaftarId
-        && request.resource.data.userEmail == request.auth.token.email
-        && request.resource.data.status == 'Menunggu Verifikasi'
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.userEmail == request.auth.token.email.lower()
+        && request.resource.data.status in ['Menunggu', 'Menunggu Verifikasi']
         && request.resource.data.namaLengkap is string 
         && request.resource.data.namaLengkap.size() <= 200
         && request.resource.data.noHp is string
@@ -74,7 +77,7 @@ service cloud.firestore {
         && (
           // Student self-update
           (
-            request.auth.token.email == resource.data.userEmail
+            request.auth.token.email.lower() == resource.data.userEmail.lower()
             && resource.data.status != 'Diterima' 
             && resource.data.status != 'Ditolak'
             && request.resource.data.status == resource.data.status

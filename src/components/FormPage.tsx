@@ -162,11 +162,13 @@ export default function FormPage({
 
     setIsUploading(true);
     try {
-      // Hasilkan detail aplikasi acak
-      const registrationNumber = `MAG-2026-${Math.floor(10000 + Math.random() * 90000)}`;
+      const { db } = await import("../firebase");
+      const { doc, runTransaction, setDoc } =
+        await import("firebase/firestore");
 
       const newApplication: Application = {
-        id: registrationNumber,
+        id: "",
+        userId: currentUser.id,
         userEmail: (currentUser.email || "").toLowerCase().trim(),
         tglDaftar: new Date().toISOString().split("T")[0],
         status: "Menunggu",
@@ -194,14 +196,43 @@ export default function FormPage({
       };
 
       try {
-        // Import Firestore dynamically and write to DB immediately so the data is in the database and listeners trigger instantly
-        const { db } = await import("../firebase");
-        const { doc, setDoc } = await import("firebase/firestore");
+        let applicationSaved = false;
+        for (let attempt = 0; attempt < 10; attempt += 1) {
+          const randomCode = Math.floor(10000 + Math.random() * 90000);
+          const registrationNumber = `MAG-2026-${randomCode}`;
+          newApplication.id = registrationNumber;
 
-        await setDoc(
-          doc(db, "pendaftar_magang", registrationNumber),
-          newApplication,
-        );
+          try {
+            await runTransaction(db, async (transaction) => {
+              const applicationRef = doc(
+                db,
+                "pendaftar_magang",
+                registrationNumber,
+              );
+              const existingApplication = await transaction.get(applicationRef);
+              if (existingApplication.exists()) {
+                throw new Error("REGISTRATION_NUMBER_TAKEN");
+              }
+              transaction.set(applicationRef, newApplication);
+            });
+            applicationSaved = true;
+            break;
+          } catch (saveError) {
+            if (
+              saveError instanceof Error &&
+              saveError.message === "REGISTRATION_NUMBER_TAKEN"
+            ) {
+              continue;
+            }
+            throw saveError;
+          }
+        }
+
+        if (!applicationSaved) {
+          throw new Error(
+            "Gagal membuat nomor pendaftaran unik. Silakan coba lagi.",
+          );
+        }
 
         // Perbarui profil siswa dengan data dari formulir pendaftaran.
         if (currentUser && currentUser.role === "student") {

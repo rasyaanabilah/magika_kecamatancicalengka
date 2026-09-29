@@ -12,6 +12,7 @@ import { printLetter } from "../../utils/printLetter";
 interface StudentGraduationProps {
   currentUser: UserType;
   application: Application;
+  applications?: Application[];
   studentSurat?: any;
   studentSuratList?: any[];
 }
@@ -19,6 +20,7 @@ interface StudentGraduationProps {
 export default function StudentGraduation({
   currentUser,
   application,
+  applications = [],
   studentSurat,
   studentSuratList = [],
 }: StudentGraduationProps) {
@@ -78,8 +80,7 @@ export default function StudentGraduation({
         "",
       penandatanganNama: s?.penandatanganNama || "",
       penandatanganNip: s?.penandatanganNip || "",
-      penandatanganJabatan:
-        s?.penandatanganJabatan || "",
+      penandatanganJabatan: s?.penandatanganJabatan || "",
       penandatanganInstansi: s?.penandatanganInstansi || "",
       penandatanganPangkat: s?.penandatanganPangkat || "",
     });
@@ -108,8 +109,7 @@ export default function StudentGraduation({
       tanggalKeluar:
         s?.tanggalKeluar || application?.suratPengantarTanggal || "",
       lampiran: s?.lampiran || application?.suratPengantarLampiran || "",
-      perihal:
-        s?.perihal || application?.suratPengantarPerihal || "",
+      perihal: s?.perihal || application?.suratPengantarPerihal || "",
       sifat: s?.sifat || application?.suratPengantarSifat || "",
       penandatanganNama:
         s?.penandatanganNama || application?.suratPenandatanganNama || "",
@@ -117,24 +117,26 @@ export default function StudentGraduation({
         s?.penandatanganJabatan || application?.suratPenandatanganJabatan || "",
       penandatanganNip:
         s?.penandatanganNip || application?.suratPenandatanganNip || "",
-      kepadaJabatan:
-        s?.kepadaJabatan || application?.suratKepadaJabatan || "",
+      kepadaJabatan: s?.kepadaJabatan || application?.suratKepadaJabatan || "",
       kepadaInstansi:
-        s?.kepadaInstansi || application?.suratKepadaInstansi || application?.instansiPendidikan || application?.universitas || "",
+        s?.kepadaInstansi ||
+        application?.suratKepadaInstansi ||
+        application?.instansiPendidikan ||
+        application?.universitas ||
+        "",
       tempat: s?.tempat || application?.suratTempat || "",
-      rujukanPengirim:
-        s?.rujukanPengirim || application?.rujukanPengirim || "",
+      rujukanPengirim: s?.rujukanPengirim || application?.rujukanPengirim || "",
       rujukanInstansi:
-        s?.rujukanInstansi || application?.rujukanInstansi || application?.instansiPendidikan || application?.universitas || "",
-      rujukanNo:
-        s?.rujukanNo || application?.rujukanNo || "",
+        s?.rujukanInstansi ||
+        application?.rujukanInstansi ||
+        application?.instansiPendidikan ||
+        application?.universitas ||
+        "",
+      rujukanNo: s?.rujukanNo || application?.rujukanNo || "",
       rujukanTgl: s?.rujukanTgl || application?.rujukanTgl || "",
-      rujukanPerihal:
-        s?.rujukanPerihal || application?.rujukanPerihal || "",
-      isiSurat:
-        s?.isiSurat || application?.suratPengantarIsi || "",
-      tembusan:
-        s?.tembusan || application?.suratTembusan || "",
+      rujukanPerihal: s?.rujukanPerihal || application?.rujukanPerihal || "",
+      isiSurat: s?.isiSurat || application?.suratPengantarIsi || "",
+      tembusan: s?.tembusan || application?.suratTembusan || "",
       daftarPesertaSurat: list,
       kategoriPendaftar: application?.kategoriPendaftar || "",
     });
@@ -167,82 +169,64 @@ export default function StudentGraduation({
         {/* List of Available Documents */}
         {hasOfficialLetter ? (
           <div className="space-y-4">
-            {suratKeterangan && (
-              <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 md:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 hover:border-emerald-300 transition-all">
-                <div className="space-y-1 text-center sm:text-left flex-1">
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-extrabold text-[10px]">
-                    <FileCheck className="h-3 w-3 text-emerald-600" /> Surat
-                    Kelulusan Magang
-                  </div>
-                  <h4 className="font-bold text-slate-900 text-base">
-                    Surat Keterangan Magang Kerja
-                  </h4>
-                  <p className="text-xs text-slate-500">
-                    Surat bukti resmi bahwa Anda telah menyelesaikan kegiatan
-                    magang kerja di Kecamatan Cicalengka.
-                  </p>
-                </div>
-                <button
-                  onClick={() => handlePrintKeteranganMagang(suratKeterangan)}
-                  className="w-full sm:w-auto px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2 shrink-0 font-sans"
+            {suratListForStudent.map((surat) => {
+              const isKeterangan = surat.tipeSurat === "keterangan_magang";
+              const suratRegistrationNumbers = applications
+                .filter((app) => surat.penerimaIds?.includes(app.id))
+                .map((app) => app.id);
+              const registrationNumber =
+                suratRegistrationNumbers.length > 0
+                  ? suratRegistrationNumbers.join(", ")
+                  : application.id;
+              return (
+                <div
+                  key={surat.id}
+                  className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 md:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 hover:border-blue-300 transition-all"
                 >
-                  <Printer className="h-4 w-4" /> Cetak Surat Keterangan
-                </button>
-              </div>
-            )}
-
-            {suratBalasan && (
-              <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 md:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 hover:border-blue-300 transition-all">
-                <div className="space-y-1 text-center sm:text-left flex-1">
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-blue-100 text-blue-800 font-extrabold text-[10px]">
-                    <FileCheck className="h-3 w-3 text-blue-600" /> Surat
-                    Penerimaan / Izin
+                  <div className="space-y-1 text-center sm:text-left flex-1">
+                    <div
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md font-extrabold text-[10px] ${
+                        isKeterangan
+                          ? "bg-emerald-100 text-emerald-800"
+                          : "bg-blue-100 text-blue-800"
+                      }`}
+                    >
+                      <FileCheck className="h-3 w-3" />
+                      {isKeterangan
+                        ? "Surat Keterangan Magang"
+                        : "Surat Balasan Resmi"}
+                    </div>
+                    <h4 className="font-bold text-slate-900 text-base">
+                      {surat.perihal ||
+                        (isKeterangan
+                          ? "Surat Keterangan Magang Kerja"
+                          : "Surat Balasan Permohonan Magang")}
+                    </h4>
+                    <p className="text-xs text-slate-500">
+                      Nomor: {surat.nomorSurat || "-"}
+                      {surat.tanggalKeluar ? ` · ${surat.tanggalKeluar}` : ""}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      No. Pendaftaran: {registrationNumber || "-"}
+                    </p>
                   </div>
-                  <h4 className="font-bold text-slate-900 text-base">
-                    Surat Balasan Permohonan Magang
-                  </h4>
-                  <p className="text-xs text-slate-500">
-                    Surat jawaban resmi atas surat permohonan izin magang dari
-                    kampus/sekolah Anda.
-                  </p>
-                </div>
-                <button
-                  onClick={() => handlePrintBalasan(suratBalasan)}
-                  className="w-full sm:w-auto px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2 shrink-0 font-sans"
-                >
-                  <Printer className="h-4 w-4" /> Cetak Surat Balasan
-                </button>
-              </div>
-            )}
-
-            {!suratKeterangan && !suratBalasan && (
-              <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 md:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 hover:border-blue-300 transition-all">
-                <div className="space-y-1 text-center sm:text-left flex-1">
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-blue-100 text-blue-800 font-extrabold text-[10px]">
-                    <FileCheck className="h-3 w-3 text-blue-600" /> Surat Resmi
-                    Kecamatan
-                  </div>
-                  <h4 className="font-bold text-slate-900 text-base">
-                    {studentSurat?.perihal || "Surat Kelulusan / Balasan Resmi"}
-                  </h4>
-                  <p className="text-xs text-slate-500">
-                    Dokumen resmi dari Kecamatan Cicalengka untuk Anda.
-                  </p>
-                </div>
-                <button
-                  onClick={() => {
-                    if (studentSurat?.tipeSurat === "keterangan_magang") {
-                      handlePrintKeteranganMagang(studentSurat);
-                    } else {
-                      handlePrintBalasan(studentSurat);
+                  <button
+                    onClick={() =>
+                      isKeterangan
+                        ? handlePrintKeteranganMagang(surat)
+                        : handlePrintBalasan(surat)
                     }
-                  }}
-                  className="w-full sm:w-auto px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2 shrink-0 font-sans"
-                >
-                  <Printer className="h-4 w-4" /> Cetak Dokumen
-                </button>
-              </div>
-            )}
+                    className={`w-full sm:w-auto px-5 py-3 text-white text-xs font-extrabold rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2 shrink-0 font-sans ${
+                      isKeterangan
+                        ? "bg-emerald-600 hover:bg-emerald-700"
+                        : "bg-blue-600 hover:bg-blue-700"
+                    }`}
+                  >
+                    <Printer className="h-4 w-4" /> Cetak / Unduh Surat
+                  </button>
+                </div>
+              );
+            })}
           </div>
         ) : (
           <div className="bg-amber-50/80 border border-amber-200/90 rounded-2xl p-8 text-center space-y-3">
@@ -282,4 +266,4 @@ export default function StudentGraduation({
       )}
     </div>
   );
-} 
+}

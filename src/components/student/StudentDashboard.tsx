@@ -29,7 +29,7 @@ import logoMagika from "../../assets/images/logo_magika.png";
 
 interface StudentDashboardProps {
   currentUser: UserType;
-  application: Application | null;
+  applications: Application[];
   onNavigateForm: () => void;
   onLogout: () => void;
   onDeleteApplication: () => void; // Untuk keperluan testing / reset form pendaftaran
@@ -41,7 +41,7 @@ interface StudentDashboardProps {
 
 export default function StudentDashboard({
   currentUser,
-  application,
+  applications,
   onNavigateForm,
   onLogout,
   whatsappLink,
@@ -49,34 +49,51 @@ export default function StudentDashboard({
   onUpdateUser,
   suratList = [],
 }: StudentDashboardProps) {
+  const [selectedApplicationId, setSelectedApplicationId] = useState<
+    string | null
+  >(null);
+  const application =
+    applications.find((app) => app.id === selectedApplicationId) ||
+    applications[0] ||
+    null;
   const [activeTab, setActiveTab] = useState<
     "dashboard" | "permohonan" | "pengaturan" | "laporan" | "kelulusan"
   >("dashboard");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [, setIsEditingProfile] = useState(false);
 
-  React.useEffect(() => {
-    if (
-      activeTab === "kelulusan" &&
-      application?.kategoriPendaftar === "siswa"
-    ) {
-      setActiveTab("dashboard");
-    }
-  }, [activeTab, application]);
+  const applicationIds = new Set(applications.map((app) => app.id));
+  const normalizedStudentEmail = (currentUser.email || "").trim().toLowerCase();
+  const isStudentRecipient = (recipientId?: string) => {
+    if (!recipientId) return false;
+    return (
+      recipientId === currentUser.id ||
+      applicationIds.has(recipientId) ||
+      recipientId.trim().toLowerCase() === normalizedStudentEmail
+    );
+  };
 
-  // Mengambil data surat balasan resmi dari Kecamatan untuk siswa/mahasiswa ini (real-time)
+  // Cocokkan surat dengan seluruh riwayat pendaftaran akun, bukan hanya yang sedang dipilih.
   const studentSuratList = (suratList || []).filter(
     (s) =>
-      s.penerimaIds?.includes(currentUser.id) ||
-      (application?.id && s.penerimaIds?.includes(application.id)) ||
+      s.penerimaIds?.some(isStudentRecipient) ||
       s.daftarPesertaSurat?.some(
         (p) =>
-          p.id === currentUser.id ||
-          p.id === application?.id ||
-          p.email?.toLowerCase() === currentUser.email?.toLowerCase(),
+          isStudentRecipient(p.id) ||
+          p.email?.trim().toLowerCase() === normalizedStudentEmail,
       ),
   );
   const studentSurat = studentSuratList.length > 0 ? studentSuratList[0] : null;
+
+  React.useEffect(() => {
+    if (
+      activeTab === "kelulusan" &&
+      application?.kategoriPendaftar === "siswa" &&
+      studentSuratList.length === 0
+    ) {
+      setActiveTab("dashboard");
+    }
+  }, [activeTab, application, studentSuratList.length]);
 
   const handleUpdateApplication = async (updatedApp: Application) => {
     if (onUpdateApplication) {
@@ -144,23 +161,25 @@ export default function StudentDashboard({
             </button>
 
             {/* Dokumen Kelulusan (Only if Accepted and NOT siswa) */}
-            {application && ["Lulus", "Selesai"].includes(application.status) &&
-              application.kategoriPendaftar !== "siswa" && (
-                <button
-                  onClick={() => setActiveTab("kelulusan")}
-                  className={`w-full px-4 py-3 rounded-xl font-semibold flex items-center gap-3 transition-colors cursor-pointer ${
-                    activeTab === "kelulusan"
-                      ? "bg-blue-600 text-white"
-                      : "hover:bg-slate-800 hover:text-slate-200"
-                  }`}
-                >
-                  <Award className="h-4 w-4" />
-                  <span>Dokumen Kelulusan</span>
-                </button>
-              )}
+            {(studentSuratList.length > 0 ||
+              (application &&
+                ["Lulus", "Selesai"].includes(application.status) &&
+                application.kategoriPendaftar !== "siswa")) && (
+              <button
+                onClick={() => setActiveTab("kelulusan")}
+                className={`w-full px-4 py-3 rounded-xl font-semibold flex items-center gap-3 transition-colors cursor-pointer ${
+                  activeTab === "kelulusan"
+                    ? "bg-blue-600 text-white"
+                    : "hover:bg-slate-800 hover:text-slate-200"
+                }`}
+              >
+                <Award className="h-4 w-4" />
+                <span>Dokumen Kelulusan</span>
+              </button>
+            )}
 
-            {/* Laporan Akhir (Only if Accepted) */}
-            {application && application.status === "Lulus" && (
+            {/* Satu halaman laporan untuk seluruh riwayat pendaftaran akun */}
+            {applications.length > 0 && (
               <button
                 onClick={() => setActiveTab("laporan")}
                 className={`w-full px-4 py-3 rounded-xl font-semibold flex items-center gap-3 transition-colors cursor-pointer ${
@@ -322,27 +341,28 @@ export default function StudentDashboard({
                   </button>
 
                   {/* Dokumen Kelulusan */}
-                  {application &&
-                    application.status === "Lulus" &&
-                    application.kategoriPendaftar !== "siswa" && (
-                      <button
-                        onClick={() => {
-                          setActiveTab("kelulusan");
-                          setIsMenuOpen(false);
-                        }}
-                        className={`w-full px-4 py-3 rounded-xl font-semibold flex items-center gap-3 transition-colors cursor-pointer ${
-                          activeTab === "kelulusan"
-                            ? "bg-blue-600 text-white"
-                            : "hover:bg-slate-800 hover:text-slate-200"
-                        }`}
-                      >
-                        <Award className="h-4 w-4" />
-                        <span>Dokumen Kelulusan</span>
-                      </button>
-                    )}
+                  {(studentSuratList.length > 0 ||
+                    (application &&
+                      ["Lulus", "Selesai"].includes(application.status) &&
+                      application.kategoriPendaftar !== "siswa")) && (
+                    <button
+                      onClick={() => {
+                        setActiveTab("kelulusan");
+                        setIsMenuOpen(false);
+                      }}
+                      className={`w-full px-4 py-3 rounded-xl font-semibold flex items-center gap-3 transition-colors cursor-pointer ${
+                        activeTab === "kelulusan"
+                          ? "bg-blue-600 text-white"
+                          : "hover:bg-slate-800 hover:text-slate-200"
+                      }`}
+                    >
+                      <Award className="h-4 w-4" />
+                      <span>Dokumen Kelulusan</span>
+                    </button>
+                  )}
 
-                  {/* Laporan */}
-                  {application && application.status === "Lulus" && (
+                  {/* Satu halaman laporan untuk seluruh riwayat pendaftaran akun */}
+                  {applications.length > 0 && (
                     <button
                       onClick={() => {
                         setActiveTab("laporan");
@@ -403,14 +423,63 @@ export default function StudentDashboard({
         >
           {/* Active Tab rendering */}
           {activeTab === "dashboard" && (
-            <StudentOverview
-              currentUser={currentUser}
-              application={application}
-              onNavigateForm={onNavigateForm}
-              whatsappLink={whatsappLink}
-              setActiveTab={setActiveTab}
-              setIsEditingProfile={setIsEditingProfile}
-            />
+            <>
+              {applications.length > 0 && (
+                <section
+                  className="space-y-3"
+                  aria-labelledby="student-application-history-title"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <h2
+                      id="student-application-history-title"
+                      className="font-display font-extrabold text-sm text-slate-900"
+                    >
+                      Riwayat Pendaftaran ({applications.length})
+                    </h2>
+                    <button
+                      onClick={onNavigateForm}
+                      className="px-4 py-2 bg-blue-600 text-white font-bold text-xs rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
+                    >
+                      Daftar Magang Lagi
+                    </button>
+                  </div>
+                  <div className="divide-y divide-slate-200 border-y border-slate-200 bg-white">
+                    {applications.map((app) => (
+                      <button
+                        key={app.id}
+                        onClick={() => setSelectedApplicationId(app.id)}
+                        aria-pressed={application?.id === app.id}
+                        className={`w-full px-4 py-3 text-left transition-colors cursor-pointer ${
+                          application?.id === app.id
+                            ? "bg-blue-50"
+                            : "hover:bg-slate-50"
+                        }`}
+                      >
+                        <span className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+                          <span className="font-mono text-xs font-bold text-slate-800">
+                            {app.id}
+                          </span>
+                          <span className="text-[11px] font-semibold text-slate-500">
+                            {app.status} · {app.tglDaftar}
+                          </span>
+                        </span>
+                        <span className="mt-1 block truncate text-xs text-slate-600">
+                          {app.tujuanMagang || "Pendaftaran magang"}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              )}
+              <StudentOverview
+                currentUser={currentUser}
+                application={application}
+                onNavigateForm={onNavigateForm}
+                whatsappLink={whatsappLink}
+                setActiveTab={setActiveTab}
+                setIsEditingProfile={setIsEditingProfile}
+              />
+            </>
           )}
 
           {activeTab === "permohonan" && (
@@ -424,6 +493,7 @@ export default function StudentDashboard({
             <StudentGraduation
               currentUser={currentUser}
               application={application}
+              applications={applications}
               studentSurat={studentSurat}
               studentSuratList={studentSuratList}
             />
@@ -431,7 +501,8 @@ export default function StudentDashboard({
 
           {activeTab === "laporan" && application && (
             <StudentReport
-              application={application}
+              currentUser={currentUser}
+              applications={applications}
               onUpdateApplication={handleUpdateApplication}
             />
           )}

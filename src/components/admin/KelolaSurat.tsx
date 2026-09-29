@@ -401,10 +401,9 @@ export default function KelolaSurat({
             "-");
 
         const rawNo = suratNoKeterangan || "1";
-        const formattedNo =
-          rawNo.includes("400.14.5.4")
-            ? rawNo
-            : `400.14.5.4/${rawNo.replace(/[^0-9]/g, "")}/Sekret`;
+        const formattedNo = rawNo.includes("400.14.5.4")
+          ? rawNo
+          : `400.14.5.4/${rawNo.replace(/[^0-9]/g, "")}/Sekret`;
 
         const recipientIds = Array.from(
           new Set(
@@ -455,13 +454,13 @@ export default function KelolaSurat({
           }),
         };
 
-      // Simpan Surat Keterangan ke database.
-      // Surat Keterangan TIDAK mengubah status pendaftar.
-      await onCreateSurat(payload);
+        // Simpan Surat Keterangan ke database.
+        // Surat Keterangan TIDAK mengubah status pendaftar.
+        await onCreateSurat(payload);
 
-      setActionSuccessMsg(
-        `Surat Keterangan Magang Kerja (${formattedNo}) berhasil diterbitkan untuk ${recName}. Status peserta tidak diubah.`,
-      );
+        setActionSuccessMsg(
+          `Surat Keterangan Magang Kerja (${formattedNo}) berhasil diterbitkan untuk ${recName}. Status peserta tidak diubah.`,
+        );
       } else {
         const list = selectedRecipients
           .map((id) => (id ? applications.find((a) => a.id === id) : undefined))
@@ -840,7 +839,6 @@ export default function KelolaSurat({
 
                       return filtered.map((app) => {
                         const isSiswa = app.kategoriPendaftar === "siswa";
-                        const idNo = isSiswa ? app.nisn || "-" : app.nim || "-";
                         const pName = isSiswa
                           ? app.jurusan || app.prodi
                           : app.prodi;
@@ -859,7 +857,7 @@ export default function KelolaSurat({
                                 </span>
                               </div>
                               <div className="text-[10px] text-slate-500 mt-0.5">
-                                {pName} • NIM/NISN: {idNo}{" "}
+                                {pName} • No. Pendaftaran: {app.id}{" "}
                                 {app.userEmail ? `• ${app.userEmail}` : ""}
                               </div>
                               <div className="text-[10px] font-bold text-blue-600 mt-0.5">

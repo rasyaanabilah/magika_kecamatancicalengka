@@ -25,6 +25,7 @@ export interface FileData {
 
 export interface Application {
   id: string; // e.g. MAG-2026-00015
+  userId?: string; // Firebase Authentication UID; absent on legacy applications
   userEmail: string;
   tglDaftar: string;
   status: ApplicationStatus;
@@ -98,6 +99,8 @@ export interface Application {
 
   // Laporan Akhir Magang
   laporan?: {
+    userId?: string;
+    pendaftarId?: string;
     judul: string;
     ringkasan?: string;
     deskripsi?: string;

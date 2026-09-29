@@ -304,125 +304,174 @@ export default function App() {
                   );
                 }
               } else if (userRole === "student") {
-                // Pelajar hanya dapat memantau aplikasi mereka sendiri melalui query yang difilter,
-                // untuk mencegah kesalahan izin akses pada Firestore.
+                // Gabungkan pendaftaran baru berbasis UID dengan data lama berbasis email.
                 if (!unsubApps) {
                   const studentEmailKey = (userData.email || "")
                     .toLowerCase()
                     .trim();
-                  const studentQuery = query(
+                  let emailApplications: Application[] = [];
+                  let exactEmailApplications: Application[] = [];
+                  let uidApplications: Application[] = [];
+                  const publishStudentApplications = () => {
+                    const byId = new globalThis.Map<string, Application>();
+                    [...emailApplications, ...uidApplications].forEach((app) =>
+                      byId.set(app.id, app),
+                    );
+                    exactEmailApplications.forEach((app) =>
+                      byId.set(app.id, app),
+                    );
+                    const list = Array.from(byId.values());
+                    list.sort((a, b) => {
+                      const dateOrder = (b.tglDaftar || "").localeCompare(
+                        a.tglDaftar || "",
+                      );
+                      return (
+                        dateOrder || (b.id || "").localeCompare(a.id || "")
+                      );
+                    });
+                    setApplications(list);
+                  };
+                  const emailQuery = query(
                     collection(db, "pendaftar_magang"),
                     where("userEmail", "==", studentEmailKey),
                   );
-
-                  // Langganan utama: menggunakan email yang sudah dinormalisasi agar query lebih konsisten.
-                  let primaryUnsub: (() => void) | null = onSnapshot(
-                    studentQuery,
+                  const exactEmailQuery = query(
+                    collection(db, "pendaftar_magang"),
+                    where("userEmail", "==", (userData.email || "").trim()),
+                  );
+                  const uidQuery = query(
+                    collection(db, "pendaftar_magang"),
+                    where("userId", "==", firebaseUser.uid),
+                  );
+                  const emailUnsub = onSnapshot(
+                    emailQuery,
                     (snapshot) => {
-                      const list: Application[] = [];
+                      emailApplications = [];
                       snapshot.forEach((docSnap) => {
                         const data = docSnap.data();
                         if (data) {
                           const { id: _ignoredId, ...rest } =
                             data as Application;
-                          list.push({ ...rest, id: docSnap.id } as Application);
+                          emailApplications.push({
+                            ...rest,
+                            id: docSnap.id,
+                          } as Application);
                         }
                       });
-                      if (list.length > 0) {
-                        list.sort((a, b) =>
-                          (b.id || "").localeCompare(a.id || ""),
-                        );
-                        setApplications(list);
-                      } else {
-                        // Cadangan: beberapa dokumen lama mungkin menyimpan email dengan format kapital berbeda.
-                        // Jika query utama tidak menemukan apa pun, ambil keseluruhan koleksi dan saring di sisi klien.
-                        if (primaryUnsub) {
-                          primaryUnsub();
-                          primaryUnsub = null;
-                        }
-                        unsubApps = onSnapshot(
-                          collection(db, "pendaftar_magang"),
-                          (fullSnap) => {
-                            const fullList: Application[] = [];
-                            fullSnap.forEach((docSnap) => {
-                              const data = docSnap.data() as
-                                | Application
-                                | undefined;
-                              if (!data) return;
-                              const docEmail = (data.userEmail || "")
-                                .toLowerCase()
-                                .trim();
-                              if (docEmail === studentEmailKey) {
-                                const { id: _ignoredId, ...rest } =
-                                  data as Application;
-                                fullList.push({
-                                  ...rest,
-                                  id: docSnap.id,
-                                } as Application);
-                              }
-                            });
-                            fullList.sort((a, b) =>
-                              (b.id || "").localeCompare(a.id || ""),
-                            );
-                            setApplications(fullList);
-                          },
-                          (error) => {
-                            console.error(
-                              "Student fallback subscription error:",
-                              error,
-                            );
-                          },
-                        );
-                      }
+                      publishStudentApplications();
                     },
                     (error) => {
                       console.error(
-                        "Student Applications Firestore subscription error:",
+                        "Student email applications subscription error:",
                         error,
                       );
                     },
                   );
-
-                  // Simpan fungsi unsubscribe dari langganan utama sehingga bisa dibatalkan jika fallback aktif.
+                  const exactEmailUnsub = onSnapshot(
+                    exactEmailQuery,
+                    (snapshot) => {
+                      exactEmailApplications = [];
+                      snapshot.forEach((docSnap) => {
+                        const data = docSnap.data();
+                        if (!data) return;
+                        const { id: _ignoredId, ...rest } = data as Application;
+                        exactEmailApplications.push({
+                          ...rest,
+                          id: docSnap.id,
+                        } as Application);
+                      });
+                      publishStudentApplications();
+                    },
+                    (error) => {
+                      console.error(
+                        "Student exact-email applications subscription error:",
+                        error,
+                      );
+                    },
+                  );
+                  const uidUnsub = onSnapshot(
+                    uidQuery,
+                    (snapshot) => {
+                      uidApplications = [];
+                      snapshot.forEach((docSnap) => {
+                        const data = docSnap.data();
+                        if (!data) return;
+                        const { id: _ignoredId, ...rest } = data as Application;
+                        uidApplications.push({
+                          ...rest,
+                          id: docSnap.id,
+                        } as Application);
+                      });
+                      publishStudentApplications();
+                    },
+                    (error) => {
+                      console.error(
+                        "Student UID applications subscription error:",
+                        error,
+                      );
+                    },
+                  );
                   unsubApps = () => {
-                    if (primaryUnsub) primaryUnsub();
+                    emailUnsub();
+                    exactEmailUnsub();
+                    uidUnsub();
                   };
                 }
 
-                // Pelajar hanya dapat menerima surat yang menyertakan mereka di field penerimaIds.
+                // Dengarkan surat untuk UID dan variasi email penerima secara terpisah,
+                // lalu gabungkan hasil agar setiap surat tetap muncul satu kali.
                 if (!unsubSurat) {
-                  const searchKeys = [
-                    userData.id,
-                    userData.email?.toLowerCase(),
-                  ].filter(Boolean);
-                  const studentSuratQuery = query(
-                    collection(db, "surat"),
-                    where(
-                      "penerimaIds",
-                      "array-contains-any",
-                      searchKeys.length > 0 ? searchKeys : ["dummy_empty_val"],
+                  const email = (
+                    firebaseUser.email ||
+                    userData.email ||
+                    ""
+                  ).trim();
+                  const searchKeys = Array.from(
+                    new Set(
+                      [firebaseUser.uid, email, email.toLowerCase()].filter(
+                        (key): key is string => Boolean(key),
+                      ),
                     ),
                   );
-                  unsubSurat = onSnapshot(
-                    studentSuratQuery,
-                    (snapshot) => {
-                      const list: any[] = [];
-                      snapshot.forEach((docSnap) => {
-                        const data = docSnap.data();
-                        if (data) {
-                          const { id: _ignoredId, ...rest } = data as any;
-                          list.push({ ...rest, id: docSnap.id });
-                        }
-                      });
-                      setSuratList(list);
-                    },
-                    (error) => {
-                      console.error(
-                        "Student Surat Firestore subscription error:",
-                        error,
-                      );
-                    },
-                  );
+                  const suratByIdentifier = new globalThis.Map<
+                    string,
+                    Map<string, Surat>
+                  >();
+                  const publishStudentSurat = () => {
+                    const suratById = new globalThis.Map<string, Surat>();
+                    suratByIdentifier.forEach((list) => {
+                      list.forEach((surat, id) => suratById.set(id, surat));
+                    });
+                    setSuratList(Array.from(suratById.values()));
+                  };
+                  const suratUnsubs = searchKeys.map((recipientId) => {
+                    const studentSuratQuery = query(
+                      collection(db, "surat"),
+                      where("penerimaIds", "array-contains", recipientId),
+                    );
+                    return onSnapshot(
+                      studentSuratQuery,
+                      (snapshot) => {
+                        const list = new globalThis.Map<string, Surat>();
+                        snapshot.forEach((docSnap) => {
+                          const data = docSnap.data();
+                          if (!data) return;
+                          const { id: _ignoredId, ...rest } = data as Surat;
+                          list.set(docSnap.id, { ...rest, id: docSnap.id });
+                        });
+                        suratByIdentifier.set(recipientId, list);
+                        publishStudentSurat();
+                      },
+                      (error) => {
+                        console.error(
+                          "Student Surat Firestore subscription error:",
+                          error,
+                        );
+                      },
+                    );
+                  });
+                  unsubSurat = () =>
+                    suratUnsubs.forEach((unsubscribe) => unsubscribe());
                 }
               }
 
@@ -1080,7 +1129,7 @@ export default function App() {
       });
 
       console.log("Surat berhasil disimpan ke Firestore.");
-      
+
       // Tidak perlu setSuratList di sini.
       // onSnapshot akan otomatis memperbarui suratList.
     } catch (err) {
@@ -1138,15 +1187,20 @@ export default function App() {
     }
   };
 
-  // Cari data aplikasi magang milik siswa yang sedang login.
-  const getStudentApplication = (): Application | null => {
-    if (!currentUser || currentUser.role !== "student") return null;
+  // Ambil semua pendaftaran peserta, termasuk dokumen lama yang hanya menyimpan email.
+  const getStudentApplications = (): Application[] => {
+    if (!currentUser || currentUser.role !== "student") return [];
     const studentEmail = currentUser.email?.toLowerCase().trim() || "";
-    return (
-      applications.find(
-        (app) => (app.userEmail || "").toLowerCase().trim() === studentEmail,
-      ) || null
-    );
+    return applications
+      .filter(
+        (app) =>
+          app.userId === currentUser.id ||
+          (app.userEmail || "").toLowerCase().trim() === studentEmail,
+      )
+      .sort((a, b) => {
+        const dateOrder = (b.tglDaftar || "").localeCompare(a.tglDaftar || "");
+        return dateOrder || (b.id || "").localeCompare(a.id || "");
+      });
   };
 
   // Cari aplikasi berdasarkan ID pelacakan yang dimasukkan pengguna di halaman track.
@@ -1252,7 +1306,7 @@ export default function App() {
             {currentUser.role === "student" && (
               <StudentDashboard
                 currentUser={currentUser}
-                application={getStudentApplication()}
+                applications={getStudentApplications()}
                 onNavigateForm={() => setCurrentView("form")}
                 onLogout={handleLogout}
                 onDeleteApplication={handleDeleteApplication}
