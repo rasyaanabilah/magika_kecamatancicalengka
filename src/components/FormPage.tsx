@@ -21,16 +21,20 @@ import logoMagika from "../assets/images/logo_magika.png";
 
 interface FormPageProps {
   currentUser: UserType;
+  existingApplication?: Application | null;
   onNavigateDashboard: () => void;
   onSubmitSuccess: (newApplication: Application) => void;
+  onResubmitApplication?: (updatedApplication: Application) => Promise<void>;
 }
 
 type FormStep = "pribadi" | "kampus" | "magang" | "berkas" | "sukses";
 
 export default function FormPage({
   currentUser,
+  existingApplication,
   onNavigateDashboard,
   onSubmitSuccess,
+  onResubmitApplication,
 }: FormPageProps) {
   const stepOrder: FormStep[] = [
     "pribadi",
@@ -43,37 +47,72 @@ export default function FormPage({
   const [error, setError] = useState("");
 
   // Step 1: Data Pribadi
-  const [namaLengkap, setNamaLengkap] = useState(currentUser.namaLengkap);
-  const [jenisKelamin, setJenisKelamin] = useState<Gender>("Laki-laki");
-  const [noHp, setNoHp] = useState(currentUser.noHp || "");
-  const [alamatLengkap, setAlamatLengkap] = useState("");
+  const [namaLengkap, setNamaLengkap] = useState(
+    existingApplication?.namaLengkap || currentUser.namaLengkap,
+  );
+  const [jenisKelamin, setJenisKelamin] = useState<Gender>(
+    existingApplication?.jenisKelamin || "Laki-laki",
+  );
+  const [noHp, setNoHp] = useState(
+    existingApplication?.noHp || currentUser.noHp || "",
+  );
+  const [alamatLengkap, setAlamatLengkap] = useState(
+    existingApplication?.alamatLengkap || "",
+  );
   const [kategoriPendaftar, setKategoriPendaftar] = useState<
     "mahasiswa" | "siswa"
-  >("mahasiswa");
+  >(existingApplication?.kategoriPendaftar || "mahasiswa");
   const isMahasiswa = kategoriPendaftar === "mahasiswa";
 
   // Step 2: Data Kampus / Sekolah & Akademik
   const [instansiPendidikan, setInstansiPendidikan] = useState(
-    currentUser.instansiPendidikan || currentUser.universitas || "",
+    existingApplication?.instansiPendidikan ||
+      existingApplication?.universitas ||
+      currentUser.instansiPendidikan ||
+      currentUser.universitas ||
+      "",
   );
-  const [nim, setNim] = useState("");
-  const [nisn, setNisn] = useState("");
-  const [kelas, setKelas] = useState("Kelas XII");
-  const [jurusan, setJurusan] = useState("");
-  const [fakultas, setFakultas] = useState("");
-  const [prodi, setProdi] = useState(currentUser.prodi || "");
-  const [semester, setSemester] = useState("Semester 5");
+  const [nim, setNim] = useState(existingApplication?.nim || "");
+  const [nisn, setNisn] = useState(existingApplication?.nisn || "");
+  const [kelas, setKelas] = useState(existingApplication?.kelas || "Kelas XII");
+  const [jurusan, setJurusan] = useState(existingApplication?.jurusan || "");
+  const [fakultas, setFakultas] = useState(existingApplication?.fakultas || "");
+  const [prodi, setProdi] = useState(
+    existingApplication?.prodi || currentUser.prodi || "",
+  );
+  const [semester, setSemester] = useState(
+    existingApplication?.semester || "Semester 5",
+  );
 
   // Step 3: Data Magang
-  const [durasi, setDurasi] = useState<LamaMagang>("3 Bulan");
-  const [isCustomDurasi, setIsCustomDurasi] = useState(false);
-  const [customDurasi, setCustomDurasi] = useState("");
-  const [tanggalMulai, setTanggalMulai] = useState("2026-07-15");
-  const [tanggalSelesai, setTanggalSelesai] = useState("2026-10-15");
-  const [tujuanMagang, setTujuanMagang] = useState("");
+  const standardDurations = ["1 Bulan", "2 Bulan", "3 Bulan", "6 Bulan"];
+  const isExistingCustomDuration = Boolean(
+    existingApplication?.durasi &&
+    !standardDurations.includes(existingApplication.durasi),
+  );
+  const [durasi, setDurasi] = useState<LamaMagang>(
+    existingApplication?.durasi || "3 Bulan",
+  );
+  const [isCustomDurasi, setIsCustomDurasi] = useState(
+    isExistingCustomDuration,
+  );
+  const [customDurasi, setCustomDurasi] = useState(
+    isExistingCustomDuration ? existingApplication?.durasi || "" : "",
+  );
+  const [tanggalMulai, setTanggalMulai] = useState(
+    existingApplication?.tanggalMulai || "2026-07-15",
+  );
+  const [tanggalSelesai, setTanggalSelesai] = useState(
+    existingApplication?.tanggalSelesai || "2026-10-15",
+  );
+  const [tujuanMagang, setTujuanMagang] = useState(
+    existingApplication?.tujuanMagang || "",
+  );
 
   // Step 4: Link Google Drive Berkas Persyaratan
-  const [linkDrive, setLinkDrive] = useState("");
+  const [linkDrive, setLinkDrive] = useState(
+    existingApplication?.linkDrive || "",
+  );
   const [isUploading, setIsUploading] = useState(false);
 
   const [agreeTerms, setAgreeTerms] = useState(false);
@@ -166,11 +205,18 @@ export default function FormPage({
       const { doc, runTransaction, setDoc } =
         await import("firebase/firestore");
 
+      const previousRejectionReason =
+        existingApplication?.rejectionReason || existingApplication?.statusNote;
       const newApplication: Application = {
-        id: "",
-        userId: currentUser.id,
-        userEmail: (currentUser.email || "").toLowerCase().trim(),
-        tglDaftar: new Date().toISOString().split("T")[0],
+        ...(existingApplication || {}),
+        id: existingApplication?.id || "",
+        userId: existingApplication?.userId || currentUser.id,
+        userEmail:
+          existingApplication?.userEmail ||
+          (currentUser.email || "").toLowerCase().trim(),
+        tglDaftar:
+          existingApplication?.tglDaftar ||
+          new Date().toISOString().split("T")[0],
         status: "Menunggu",
         namaLengkap,
         jenisKelamin,
@@ -193,49 +239,83 @@ export default function FormPage({
         tanggalSelesai,
         tujuanMagang,
         linkDrive: linkDrive.trim(),
+        ...(existingApplication
+          ? {
+              rejectionReason: "",
+              statusNote: "",
+              verifiedBy: "",
+              verifiedAt: "",
+            }
+          : {}),
+        ...(existingApplication && previousRejectionReason
+          ? {
+              rejectionHistory: [
+                ...(existingApplication.rejectionHistory || []),
+                {
+                  reason: previousRejectionReason,
+                  recordedAt: new Date().toISOString(),
+                },
+              ],
+            }
+          : {}),
       };
 
       try {
-        let applicationSaved = false;
-        for (let attempt = 0; attempt < 10; attempt += 1) {
-          const randomCode = Math.floor(10000 + Math.random() * 90000);
-          const registrationNumber = `MAG-2026-${randomCode}`;
-          newApplication.id = registrationNumber;
+        if (existingApplication) {
+          if (
+            existingApplication.status !== "Ditolak" ||
+            !onResubmitApplication
+          ) {
+            throw new Error("Pendaftaran ini tidak dapat dikirim ulang.");
+          }
+          await onResubmitApplication(newApplication);
+        } else {
+          let applicationSaved = false;
+          for (let attempt = 0; attempt < 10; attempt += 1) {
+            const randomCode = Math.floor(10000 + Math.random() * 90000);
+            const registrationNumber = `MAG-2026-${randomCode}`;
+            newApplication.id = registrationNumber;
 
-          try {
-            await runTransaction(db, async (transaction) => {
-              const applicationRef = doc(
-                db,
-                "pendaftar_magang",
-                registrationNumber,
-              );
-              const existingApplication = await transaction.get(applicationRef);
-              if (existingApplication.exists()) {
-                throw new Error("REGISTRATION_NUMBER_TAKEN");
+            try {
+              await runTransaction(db, async (transaction) => {
+                const applicationRef = doc(
+                  db,
+                  "pendaftar_magang",
+                  registrationNumber,
+                );
+                const existingRegistration =
+                  await transaction.get(applicationRef);
+                if (existingRegistration.exists()) {
+                  throw new Error("REGISTRATION_NUMBER_TAKEN");
+                }
+                transaction.set(applicationRef, newApplication);
+              });
+              applicationSaved = true;
+              break;
+            } catch (saveError) {
+              if (
+                saveError instanceof Error &&
+                saveError.message === "REGISTRATION_NUMBER_TAKEN"
+              ) {
+                continue;
               }
-              transaction.set(applicationRef, newApplication);
-            });
-            applicationSaved = true;
-            break;
-          } catch (saveError) {
-            if (
-              saveError instanceof Error &&
-              saveError.message === "REGISTRATION_NUMBER_TAKEN"
-            ) {
-              continue;
+              throw saveError;
             }
-            throw saveError;
+          }
+
+          if (!applicationSaved) {
+            throw new Error(
+              "Gagal membuat nomor pendaftaran unik. Silakan coba lagi.",
+            );
           }
         }
 
-        if (!applicationSaved) {
-          throw new Error(
-            "Gagal membuat nomor pendaftaran unik. Silakan coba lagi.",
-          );
-        }
-
         // Perbarui profil siswa dengan data dari formulir pendaftaran.
-        if (currentUser && currentUser.role === "student") {
+        if (
+          currentUser &&
+          currentUser.role === "student" &&
+          !existingApplication
+        ) {
           const updatedUser = {
             ...currentUser,
             instansiPendidikan: newApplication.instansiPendidikan,
@@ -254,16 +334,18 @@ export default function FormPage({
       setSubmittedApp(newApplication);
       setStep("sukses");
 
-      // WhatsApp Admin integration
-      try {
-        const message = `Hallo Admin, saya pendaftar baru.\nNama: ${namaLengkap}\nInstansi: ${instansiPendidikan}\nAlamat: ${alamatLengkap}\nTerima kasih`;
-        const waLink = `https://wa.me/6283844165405?text=${encodeURIComponent(message)}`;
-        window.location.href = waLink;
-      } catch (waErr: any) {
-        console.error("WhatsApp redirect failed:", waErr);
-        alert(
-          "Pendaftaran Anda telah berhasil disimpan! Namun gagal membuka aplikasi WhatsApp secara otomatis.",
-        );
+      if (!existingApplication) {
+        // WhatsApp Admin integration
+        try {
+          const message = `Hallo Admin, saya pendaftar baru.\nNama: ${namaLengkap}\nInstansi: ${instansiPendidikan}\nAlamat: ${alamatLengkap}\nTerima kasih`;
+          const waLink = `https://wa.me/6283844165405?text=${encodeURIComponent(message)}`;
+          window.location.href = waLink;
+        } catch (waErr: any) {
+          console.error("WhatsApp redirect failed:", waErr);
+          alert(
+            "Pendaftaran Anda telah berhasil disimpan! Namun gagal membuka aplikasi WhatsApp secara otomatis.",
+          );
+        }
       }
     } catch (uploadErr: any) {
       console.error("Firebase submit failed:", uploadErr);
@@ -902,7 +984,9 @@ export default function FormPage({
                     ) : (
                       <>
                         <ClipboardCheck className="h-4.5 w-4.5" />
-                        Ajukan Pendaftaran
+                        {existingApplication
+                          ? "Kirim Ulang Pendaftaran"
+                          : "Ajukan Pendaftaran"}
                       </>
                     )}
                   </button>
@@ -935,12 +1019,14 @@ export default function FormPage({
 
             <div className="space-y-3">
               <h2 className="font-display text-2xl md:text-3xl font-extrabold text-slate-950 tracking-tight leading-none">
-                Pendaftaran Berhasil!
+                {existingApplication
+                  ? "Pendaftaran Berhasil Dikirim Ulang!"
+                  : "Pendaftaran Berhasil!"}
               </h2>
               <p className="text-slate-500 text-xs md:text-sm max-w-md mx-auto leading-relaxed">
-                Selamat! Berkas pendaftaran magang Anda telah berhasil kami
-                terima. Silakan simpan nomor pendaftaran Anda di bawah untuk
-                pengecekan berkala.
+                {existingApplication
+                  ? "Perbaikan berkas Anda telah diterima dan akan diperiksa kembali oleh petugas."
+                  : "Selamat! Berkas pendaftaran magang Anda telah berhasil kami terima. Silakan simpan nomor pendaftaran Anda di bawah untuk pengecekan berkala."}
               </p>
             </div>
 

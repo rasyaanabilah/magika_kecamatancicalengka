@@ -254,8 +254,7 @@ export default function TrackPage({
                         <span className="font-mono bg-emerald-100/50 px-2 py-0.5 rounded-md text-emerald-900 font-bold">
                           {matchedApp.id}
                         </span>{" "}
-                        dinyatakan LULUS. Silakan login ke akun Anda dan unduh
-                        surat untuk dikirim ke Badan Kesatuan Bangsa dan Politik Kabupaten Bandung.
+                        dinyatakan LULUS. Silakan login ke akun Anda untuk informasi lebih lengkapnya.
                       </p>
                     </div>
                   )}

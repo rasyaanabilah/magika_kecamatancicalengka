@@ -13,13 +13,16 @@ import {
   MessageCircle,
   ExternalLink,
   Eye,
+  RotateCcw,
 } from "lucide-react";
 import { Application, User as UserType } from "../../types";
 
 interface StudentOverviewProps {
+  children?: React.ReactNode;
   currentUser: UserType;
   application: Application | null;
   onNavigateForm: () => void;
+  onResubmitApplication: (application: Application) => void;
   whatsappLink?: string;
   setActiveTab: (
     tab: "dashboard" | "permohonan" | "pengaturan" | "laporan" | "kelulusan",
@@ -39,9 +42,11 @@ const getInitials = (name: string) => {
 };
 
 export default function StudentOverview({
+  children,
   currentUser,
   application,
   onNavigateForm,
+  onResubmitApplication,
   whatsappLink,
   setActiveTab,
   setIsEditingProfile,
@@ -62,22 +67,22 @@ export default function StudentOverview({
     switch (status) {
       case "Lulus":
         return (
-          <span className="px-3 py-1.5 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-lg border border-emerald-300 flex items-center gap-1.5">
-            <span className="h-2 w-2 bg-emerald-500 rounded-full animate-ping" />
+          <span className="px-2.5 py-1 bg-emerald-100 text-emerald-800 text-[11px] font-bold rounded-md border border-emerald-300 flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 bg-emerald-500 rounded-full animate-ping" />
             Lulus
           </span>
         );
       case "Ditolak":
         return (
-          <span className="px-3 py-1.5 bg-rose-100 text-rose-800 text-xs font-bold rounded-lg border border-rose-300 flex items-center gap-1.5">
-            <span className="h-2 w-2 bg-rose-500 rounded-full" />
+          <span className="px-2.5 py-1 bg-rose-100 text-rose-800 text-[11px] font-bold rounded-md border border-rose-300 flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 bg-rose-500 rounded-full" />
             Ditolak
           </span>
         );
       default:
         return (
-          <span className="px-3 py-1.5 bg-amber-100 text-amber-800 text-xs font-bold rounded-lg border border-amber-300 flex items-center gap-1.5">
-            <span className="h-2 w-2 bg-amber-500 rounded-full animate-pulse" />
+          <span className="px-2.5 py-1 bg-amber-100 text-amber-800 text-[11px] font-bold rounded-md border border-amber-300 flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 bg-amber-500 rounded-full animate-pulse" />
             Menunggu
           </span>
         );
@@ -85,14 +90,14 @@ export default function StudentOverview({
   };
 
   return (
-    <div className="space-y-8 animate-fade-in" id="tab-content-dashboard">
+    <div className="space-y-6 animate-fade-in" id="tab-content-dashboard">
       {/* PROFILE SUMMARY HERO CARD */}
       <section
-        className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-6"
+        className="bg-white border border-slate-200 rounded-2xl p-5 md:p-6 flex flex-col md:flex-row justify-between items-center gap-4 shadow-xs transition-shadow duration-200 hover:shadow-sm"
         id="student-profile-hero"
       >
-        <div className="flex flex-col md:flex-row items-center gap-5 text-center md:text-left w-full">
-          <div className="h-20 w-20 rounded-2xl overflow-hidden border-2 border-blue-500 p-1 bg-white shrink-0 shadow-md mx-auto md:mx-0 flex items-center justify-center">
+        <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-left w-full">
+          <div className="h-16 w-16 rounded-xl overflow-hidden border-2 border-blue-500 p-1 bg-white shrink-0 shadow-sm mx-auto md:mx-0 flex items-center justify-center">
             {currentUser.avatarUrl ? (
               <img
                 src={currentUser.avatarUrl}
@@ -110,7 +115,7 @@ export default function StudentOverview({
             <div className="text-[10px] text-blue-600 font-extrabold uppercase tracking-widest leading-none text-center md:text-left">
               Selamat Datang di Portal MAGIKA
             </div>
-            <h3 className="font-display font-extrabold text-lg md:text-xl text-slate-900 leading-tight text-center md:text-left">
+            <h3 className="font-display font-extrabold text-base md:text-lg text-slate-900 leading-tight text-center md:text-left">
               Halo, {currentUser.namaLengkap}. Selamat datang di Portal MAGIKA.
             </h3>
             {isProfileComplete ? (
@@ -132,15 +137,17 @@ export default function StudentOverview({
         </div>
       </section>
 
+      {children}
+
       {!application ? (
         /* 1A: EMPTY STATE (NOT REGISTERED YET) */
         <div
-          className="bg-white border border-slate-200 rounded-3xl p-8 md:p-12 text-center space-y-6 shadow-xs max-w-xl mx-auto"
+          className="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 text-center space-y-5 shadow-xs max-w-xl mx-auto transition-shadow duration-200 hover:shadow-sm"
           id="dashboard-empty-state"
         >
           <div className="flex justify-center">
-            <div className="h-16 w-16 bg-blue-50 border border-blue-100 rounded-full flex items-center justify-center">
-              <FileText className="h-8 w-8 text-blue-600" />
+            <div className="h-14 w-14 bg-blue-50 border border-blue-100 rounded-full flex items-center justify-center">
+              <FileText className="h-7 w-7 text-blue-600" />
             </div>
           </div>
           <div className="space-y-2">
@@ -155,7 +162,7 @@ export default function StudentOverview({
           <button
             onClick={onNavigateForm}
             id="dashboard-start-registration-btn"
-            className="px-6 py-3 bg-blue-600 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-500/15 hover:bg-blue-700 transition-all cursor-pointer"
+            className="px-4 py-2.5 bg-blue-600 text-white font-bold text-xs rounded-lg shadow-sm shadow-blue-500/15 hover:bg-blue-700 hover:shadow-md transition-all duration-200 cursor-pointer"
           >
             Daftar Magang Sekarang
           </button>
@@ -163,15 +170,15 @@ export default function StudentOverview({
       ) : (
         /* 1B: TRACK STATE (APPLICATION SUBMITTED) */
         <div
-          className="grid grid-cols-1 lg:grid-cols-12 gap-8"
+          className="grid grid-cols-1 lg:grid-cols-12 gap-6"
           id="dashboard-track-state"
         >
           {/* Left Column: Progress status log */}
           <div
-            className={`${application.status === "Ditolak" ? "lg:col-span-12" : "lg:col-span-8"} space-y-6`}
+            className={`${application.status === "Ditolak" ? "lg:col-span-12" : "lg:col-span-8"} space-y-5`}
           >
-            <div className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 md:p-6 space-y-5 shadow-xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
                 <div>
                   <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
                     Status Berkas Permohonan
@@ -187,13 +194,13 @@ export default function StudentOverview({
               </div>
 
               {/* Timeline status list */}
-              <div className="space-y-6">
+              <div className="space-y-5">
                 <div className="flex gap-4">
                   <div className="flex flex-col items-center">
-                    <div className="h-6 w-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                    <div className="h-5 w-5 bg-emerald-500 text-white rounded-full flex items-center justify-center text-[11px] font-bold">
                       ✓
                     </div>
-                    <div className="h-12 w-[2px] bg-emerald-500" />
+                    <div className="h-9 w-[2px] bg-emerald-500" />
                   </div>
                   <div>
                     <h5 className="font-bold text-slate-800 text-xs">
@@ -212,7 +219,7 @@ export default function StudentOverview({
                 <div className="flex gap-4">
                   <div className="flex flex-col items-center">
                     <div
-                      className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                      className={`h-5 w-5 rounded-full flex items-center justify-center text-[11px] font-bold ${
                         application.status !== "Menunggu"
                           ? "bg-emerald-500 text-white"
                           : "bg-blue-600 text-white animate-pulse"
@@ -221,7 +228,7 @@ export default function StudentOverview({
                       {application.status !== "Menunggu" ? "✓" : "2"}
                     </div>
                     <div
-                      className={`h-12 w-[2px] ${
+                      className={`h-9 w-[2px] ${
                         application.status === "Lulus" ||
                         application.status === "Ditolak"
                           ? "bg-emerald-500"
@@ -250,7 +257,7 @@ export default function StudentOverview({
                 <div className="flex gap-4">
                   <div className="flex flex-col items-center">
                     <div
-                      className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                      className={`h-5 w-5 rounded-full flex items-center justify-center text-[11px] font-bold ${
                         application.status === "Lulus"
                           ? "bg-emerald-500 text-white"
                           : application.status === "Ditolak"
@@ -280,7 +287,7 @@ export default function StudentOverview({
 
               {/* Rejection / Resubmit Actions */}
               {application.status === "Ditolak" && (
-                <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl space-y-3">
+                <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl space-y-3">
                   <div className="flex items-start gap-2 text-rose-800 text-xs font-bold">
                     <AlertTriangle className="h-4.5 w-4.5 text-rose-600 shrink-0" />
                     <div>
@@ -291,6 +298,13 @@ export default function StudentOverview({
                       </p>
                     </div>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => onResubmitApplication(application)}
+                    className="inline-flex items-center gap-2 rounded-lg bg-rose-600 px-3.5 py-2 text-xs font-bold text-white transition-all duration-200 hover:bg-rose-700 hover:shadow-sm"
+                  >
+                    <RotateCcw className="h-4 w-4" /> Daftar Ulang
+                  </button>
                 </div>
               )}
             </div>
@@ -303,9 +317,9 @@ export default function StudentOverview({
               {application.status === "Lulus" ? (
                 <>
                   {/* WA Group coordinator link widget */}
-                  <div className="bg-emerald-600 text-white p-5 rounded-3xl space-y-3 shadow-lg shadow-emerald-500/10">
-                    <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center">
-                      <MessageCircle className="h-5 w-5 text-white" />
+                  <div className="bg-emerald-600 text-white p-4 rounded-2xl space-y-3 shadow-md shadow-emerald-500/10 transition-shadow duration-200 hover:shadow-lg">
+                    <div className="h-9 w-9 bg-white/20 rounded-lg flex items-center justify-center">
+                      <MessageCircle className="h-4.5 w-4.5 text-white" />
                     </div>
                     <h5 className="font-bold text-sm">
                       Grup WhatsApp Koordinasi
@@ -330,14 +344,14 @@ export default function StudentOverview({
 
                   {/* Digital Documents Download buttons */}
                   {application.kategoriPendaftar !== "siswa" && (
-                    <div className="bg-white border border-slate-200 rounded-3xl p-5 space-y-3.5 shadow-xs">
+                    <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3 shadow-xs">
                       <h6 className="text-xs font-bold text-slate-800">
                         Unduh Dokumen Kelulusan
                       </h6>
 
                       <button
                         onClick={() => setActiveTab("kelulusan")}
-                        className="w-full p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200/60 rounded-xl flex items-center justify-between text-left transition-all cursor-pointer"
+                        className="w-full p-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200/60 rounded-lg flex items-center justify-between text-left transition-all duration-200 cursor-pointer"
                       >
                         <div className="flex items-center gap-2 text-xs">
                           <FileText className="h-4.5 w-4.5 text-emerald-500 shrink-0" />
@@ -357,7 +371,7 @@ export default function StudentOverview({
                 </>
               ) : application.status === "Menunggu" ? (
                 // pending candidate widgets
-                <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-4 shadow-xs text-xs">
+                <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-3 shadow-xs text-xs">
                   <h6 className="font-bold text-slate-800">
                     Panduan Verifikasi Administrasi
                   </h6>

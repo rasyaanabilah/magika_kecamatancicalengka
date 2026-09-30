@@ -80,7 +80,7 @@ export default function StudentSettings({
 
   return (
     <div
-      className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 space-y-6 animate-fade-in"
+      className="bg-white border border-slate-200 rounded-2xl p-5 md:p-6 space-y-5 animate-fade-in shadow-xs"
       id="tab-content-pengaturan"
     >
       <div>
@@ -93,10 +93,10 @@ export default function StudentSettings({
         </p>
       </div>
 
-      <form onSubmit={handleSaveProfile} className="space-y-4 max-w-xl">
+      <form onSubmit={handleSaveProfile} className="space-y-3.5 max-w-xl">
         {/* Profile Picture Upload/Preview Section */}
-        <div className="flex flex-col sm:flex-row items-center gap-4 p-4 bg-slate-50 border border-slate-200/60 rounded-2xl">
-          <div className="h-16 w-16 rounded-full border-2 border-blue-500 p-0.5 bg-white shrink-0 shadow-xs flex items-center justify-center overflow-hidden">
+        <div className="flex flex-col sm:flex-row items-center gap-3 p-3.5 bg-slate-50 border border-slate-200/60 rounded-xl">
+          <div className="h-14 w-14 rounded-full border-2 border-blue-500 p-0.5 bg-white shrink-0 shadow-xs flex items-center justify-center overflow-hidden">
             {editAvatarUrl ? (
               <img
                 src={editAvatarUrl}
@@ -157,7 +157,7 @@ export default function StudentSettings({
             type="text"
             value={editName}
             onChange={(e) => setEditName(e.target.value)}
-            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-hidden focus:border-blue-500 focus:bg-white transition-all font-semibold"
+            className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-hidden focus:border-blue-500 focus:bg-white transition-all font-semibold"
             required
           />
         </div>
@@ -171,7 +171,7 @@ export default function StudentSettings({
               type="text"
               value={editInstansiPendidikan}
               onChange={(e) => setEditInstansiPendidikan(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-hidden focus:border-blue-500 focus:bg-white transition-all"
+              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-hidden focus:border-blue-500 focus:bg-white transition-all"
               required
             />
           </div>
@@ -181,7 +181,7 @@ export default function StudentSettings({
               type="text"
               value={editProdi}
               onChange={(e) => setEditProdi(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-hidden focus:border-blue-500 focus:bg-white transition-all"
+              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-hidden focus:border-blue-500 focus:bg-white transition-all"
               required
             />
           </div>
@@ -195,7 +195,7 @@ export default function StudentSettings({
             type="text"
             value={editPhone}
             onChange={(e) => setEditPhone(e.target.value)}
-            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-hidden focus:border-blue-500 focus:bg-white transition-all font-mono"
+            className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-hidden focus:border-blue-500 focus:bg-white transition-all font-mono"
             required
           />
         </div>
@@ -204,7 +204,7 @@ export default function StudentSettings({
           <button
             type="submit"
             disabled={isSavingProfile}
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-xs disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+            className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg transition-all duration-200 hover:shadow-sm cursor-pointer shadow-xs disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
           >
             {isSavingProfile ? (
               <>

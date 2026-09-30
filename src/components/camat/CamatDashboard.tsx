@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
-import { CamatDashboardProps, CamatTab } from '../../types';
-import { CamatSidebar } from './CamatSidebar';
-import { CamatMobileNav } from './CamatMobileNav';
-import { CamatDashboardTab } from './CamatDashboardTab';
-import { CamatApplicationDetail } from './CamatApplicationDetail';
-import { CamatLaporanTab } from './CamatLaporanTab';
-import { CamatProfileTab } from './CamatProfileTab';
+import React, { useState } from "react";
+import { CamatDashboardProps, CamatTab } from "../../types";
+import { CamatSidebar } from "./CamatSidebar";
+import { CamatMobileNav } from "./CamatMobileNav";
+import { CamatDashboardTab } from "./CamatDashboardTab";
+import { CamatApplicationDetail } from "./CamatApplicationDetail";
+import { CamatLaporanTab } from "./CamatLaporanTab";
+import { CamatProfileTab } from "./CamatProfileTab";
 
 /**
  * Component: CamatDashboard
  * Deskripsi: Dashboard Executive untuk Bapak Camat Cicalengka,
- * mengorkestrasi navigasi sidebar, statistik pendaftar, audit berkas pendaftaran, 
+ * mengorkestrasi navigasi sidebar, statistik pendaftar, audit berkas pendaftaran,
  * peninjauan laporan akhir magang, dan setelan profil.
  */
 export const CamatDashboard: React.FC<CamatDashboardProps> = ({
@@ -18,36 +18,47 @@ export const CamatDashboard: React.FC<CamatDashboardProps> = ({
   onLogout,
   currentUser,
   onUpdateApplication,
-  onUpdateUser
+  onUpdateUser,
 }) => {
   // State Navigasi
-  const [activeTab, setActiveTab] = useState<CamatTab>('pendaftar');
+  const [activeTab, setActiveTab] = useState<CamatTab>("pendaftar");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
 
   // State Pencarian & Filter
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [statusFilter, setStatusFilter] = useState<string>('Semua');
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("Semua");
 
   // State Detail Pendaftar & Laporan
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
-  const [activeLaporanPreviewId, setActiveLaporanPreviewId] = useState<string | null>(null);
+  const [activeLaporanPreviewId, setActiveLaporanPreviewId] = useState<
+    string | null
+  >(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // State Form Profil Camat
-  const [profileName, setProfileName] = useState<string>(currentUser?.namaLengkap || 'Bapak Camat Cicalengka');
-  const [profilePhone, setProfilePhone] = useState<string>(currentUser?.noHp || '081234567890');
-  const [profileEmail, setProfileEmail] = useState<string>(currentUser?.email || 'camat@cicalengka.go.id');
-  const [profilePassword, setProfilePassword] = useState<string>(currentUser?.password || 'camat123');
-  const [profileAvatarUrl, setProfileAvatarUrl] = useState<string>(currentUser?.avatarUrl || '');
-  const [settingsSuccessAlert, setSettingsSuccessAlert] = useState<string | null>(null);
+  const [profileName, setProfileName] = useState<string>(
+    currentUser?.namaLengkap || "Bapak Camat Cicalengka",
+  );
+  const [profilePhone, setProfilePhone] = useState<string>(
+    currentUser?.noHp || "081234567890",
+  );
+  const [profileEmail, setProfileEmail] = useState<string>(
+    currentUser?.email || "camat@cicalengka.go.id",
+  );
+  const [profileAvatarUrl, setProfileAvatarUrl] = useState<string>(
+    currentUser?.avatarUrl || "",
+  );
+  const [settingsSuccessAlert, setSettingsSuccessAlert] = useState<
+    string | null
+  >(null);
 
   // Pendaftar yang sedang dipilih untuk audit detail
-  const selectedApp = applications.find(a => a.id === selectedAppId);
+  const selectedApp = applications.find((a) => a.id === selectedAppId);
 
   // Fungsi Hapus Laporan
   const handleDeleteLaporan = (appId: string) => {
     if (onUpdateApplication) {
-      const targetApp = applications.find(a => a.id === appId);
+      const targetApp = applications.find((a) => a.id === appId);
       if (targetApp) {
         const updatedApp = { ...targetApp };
         delete updatedApp.laporan;
@@ -65,19 +76,21 @@ export const CamatDashboard: React.FC<CamatDashboardProps> = ({
         namaLengkap: profileName,
         noHp: profilePhone,
         email: profileEmail,
-        password: profilePassword,
-        avatarUrl: profileAvatarUrl
+        avatarUrl: profileAvatarUrl,
       };
       onUpdateUser(updatedUser);
-      setSettingsSuccessAlert('Profil Bapak Camat berhasil diperbarui.');
+      setSettingsSuccessAlert("Profil Bapak Camat berhasil diperbarui.");
       setTimeout(() => setSettingsSuccessAlert(null), 4000);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row font-sans selection:bg-blue-500 selection:text-white" id="camat-portal-container">
+    <div
+      className="min-h-screen bg-slate-50 flex flex-col lg:flex-row font-sans selection:bg-blue-500 selection:text-white"
+      id="camat-portal-container"
+    >
       {/* DESKTOP SIDEBAR */}
-      <CamatSidebar 
+      <CamatSidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         setSelectedAppId={setSelectedAppId}
@@ -85,7 +98,7 @@ export const CamatDashboard: React.FC<CamatDashboardProps> = ({
       />
 
       {/* MOBILE HEADER & DRAWER */}
-      <CamatMobileNav 
+      <CamatMobileNav
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
         activeTab={activeTab}
@@ -96,13 +109,15 @@ export const CamatDashboard: React.FC<CamatDashboardProps> = ({
 
       {/* MAIN CONTAINER */}
       <div className="flex-1 flex flex-col min-w-0">
-        <main className="flex-1 p-4 md:p-8 overflow-y-auto space-y-8" id="camat-main">
-          
+        <main
+          className="flex-1 p-4 md:p-8 overflow-y-auto space-y-8"
+          id="camat-main"
+        >
           {/* TAB 1: EXECUTIVE BRIEF & PENDAFTAR LIST */}
-          {activeTab === 'pendaftar' && (
+          {activeTab === "pendaftar" && (
             <>
               {!selectedApp ? (
-                <CamatDashboardTab 
+                <CamatDashboardTab
                   currentUser={currentUser}
                   applications={applications}
                   searchTerm={searchTerm}
@@ -112,7 +127,7 @@ export const CamatDashboard: React.FC<CamatDashboardProps> = ({
                   onSelectApp={(id) => setSelectedAppId(id)}
                 />
               ) : (
-                <CamatApplicationDetail 
+                <CamatApplicationDetail
                   selectedApp={selectedApp}
                   onBack={() => setSelectedAppId(null)}
                 />
@@ -121,8 +136,8 @@ export const CamatDashboard: React.FC<CamatDashboardProps> = ({
           )}
 
           {/* TAB 2: LAPORAN MAGANG VIEW */}
-          {activeTab === 'laporan' && (
-            <CamatLaporanTab 
+          {activeTab === "laporan" && (
+            <CamatLaporanTab
               applications={applications}
               activeLaporanPreviewId={activeLaporanPreviewId}
               setActiveLaporanPreviewId={setActiveLaporanPreviewId}
@@ -133,23 +148,20 @@ export const CamatDashboard: React.FC<CamatDashboardProps> = ({
           )}
 
           {/* TAB 3: SETELAN & PROFIL */}
-          {activeTab === 'setelan' && (
-            <CamatProfileTab 
+          {activeTab === "setelan" && (
+            <CamatProfileTab
               profileName={profileName}
               setProfileName={setProfileName}
               profilePhone={profilePhone}
               setProfilePhone={setProfilePhone}
               profileEmail={profileEmail}
               setProfileEmail={setProfileEmail}
-              profilePassword={profilePassword}
-              setProfilePassword={setProfilePassword}
               profileAvatarUrl={profileAvatarUrl}
               setProfileAvatarUrl={setProfileAvatarUrl}
               settingsSuccessAlert={settingsSuccessAlert}
               handleSaveProfile={handleSaveProfile}
             />
           )}
-
         </main>
       </div>
     </div>

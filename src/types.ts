@@ -70,6 +70,10 @@ export interface Application {
   verifiedBy?: string;
   verifiedAt?: string;
   rejectionReason?: string;
+  rejectionHistory?: {
+    reason: string;
+    recordedAt: string;
+  }[];
 
   // Kelola Surat Dinas
   suratPengantarNo?: string;

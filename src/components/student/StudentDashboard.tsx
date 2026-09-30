@@ -31,6 +31,7 @@ interface StudentDashboardProps {
   currentUser: UserType;
   applications: Application[];
   onNavigateForm: () => void;
+  onResubmitApplication: (application: Application) => void;
   onLogout: () => void;
   onDeleteApplication: () => void; // Untuk keperluan testing / reset form pendaftaran
   whatsappLink?: string;
@@ -43,6 +44,7 @@ export default function StudentDashboard({
   currentUser,
   applications,
   onNavigateForm,
+  onResubmitApplication,
   onLogout,
   whatsappLink,
   onUpdateApplication,
@@ -108,10 +110,10 @@ export default function StudentDashboard({
     >
       {/* DESKTOP SIDEBAR - Hidden on mobile, sticky on desktop */}
       <aside
-        className="w-64 bg-slate-900 text-slate-400 hidden lg:flex flex-col justify-between shrink-0 sticky top-0 h-screen overflow-y-auto border-r border-slate-800"
+        className="w-60 bg-slate-900 text-slate-400 hidden lg:flex flex-col justify-between shrink-0 sticky top-0 h-screen overflow-y-auto border-r border-slate-800"
         id="student-desktop-sidebar"
       >
-        <div className="p-6 space-y-8">
+        <div className="p-5 space-y-6">
           {/* Logo and title */}
           <div className="flex items-center gap-3">
             <div className="h-9 w-9 bg-white border border-slate-800 rounded-xl flex items-center justify-center overflow-hidden shrink-0 shadow-md">
@@ -137,7 +139,7 @@ export default function StudentDashboard({
             {/* Dashboard Utama */}
             <button
               onClick={() => setActiveTab("dashboard")}
-              className={`w-full px-4 py-3 rounded-xl font-semibold flex items-center gap-3 transition-colors cursor-pointer ${
+              className={`w-full px-3.5 py-2.5 rounded-lg font-semibold flex items-center gap-3 transition-all duration-200 cursor-pointer ${
                 activeTab === "dashboard"
                   ? "bg-blue-600 text-white"
                   : "hover:bg-slate-800 hover:text-slate-200"
@@ -150,7 +152,7 @@ export default function StudentDashboard({
             {/* Berkas Permohonan */}
             <button
               onClick={() => setActiveTab("permohonan")}
-              className={`w-full px-4 py-3 rounded-xl font-semibold flex items-center gap-3 transition-colors cursor-pointer ${
+              className={`w-full px-3.5 py-2.5 rounded-lg font-semibold flex items-center gap-3 transition-all duration-200 cursor-pointer ${
                 activeTab === "permohonan"
                   ? "bg-blue-600 text-white"
                   : "hover:bg-slate-800 hover:text-slate-200"
@@ -167,7 +169,7 @@ export default function StudentDashboard({
                 application.kategoriPendaftar !== "siswa")) && (
               <button
                 onClick={() => setActiveTab("kelulusan")}
-                className={`w-full px-4 py-3 rounded-xl font-semibold flex items-center gap-3 transition-colors cursor-pointer ${
+                className={`w-full px-3.5 py-2.5 rounded-lg font-semibold flex items-center gap-3 transition-all duration-200 cursor-pointer ${
                   activeTab === "kelulusan"
                     ? "bg-blue-600 text-white"
                     : "hover:bg-slate-800 hover:text-slate-200"
@@ -182,7 +184,7 @@ export default function StudentDashboard({
             {applications.length > 0 && (
               <button
                 onClick={() => setActiveTab("laporan")}
-                className={`w-full px-4 py-3 rounded-xl font-semibold flex items-center gap-3 transition-colors cursor-pointer ${
+                className={`w-full px-3.5 py-2.5 rounded-lg font-semibold flex items-center gap-3 transition-all duration-200 cursor-pointer ${
                   activeTab === "laporan"
                     ? "bg-blue-600 text-white"
                     : "hover:bg-slate-800 hover:text-slate-200"
@@ -196,7 +198,7 @@ export default function StudentDashboard({
             {/* Profil & Pengaturan */}
             <button
               onClick={() => setActiveTab("pengaturan")}
-              className={`w-full px-4 py-3 rounded-xl font-semibold flex items-center gap-3 transition-colors cursor-pointer ${
+              className={`w-full px-3.5 py-2.5 rounded-lg font-semibold flex items-center gap-3 transition-all duration-200 cursor-pointer ${
                 activeTab === "pengaturan"
                   ? "bg-blue-600 text-white"
                   : "hover:bg-slate-800 hover:text-slate-200"
@@ -209,10 +211,10 @@ export default function StudentDashboard({
         </div>
 
         {/* Footer actions */}
-        <div className="p-6 border-t border-slate-800">
+        <div className="p-5 border-t border-slate-800">
           <button
             onClick={onLogout}
-            className="w-full px-4 py-3 bg-slate-850 hover:bg-rose-950/40 hover:text-rose-400 text-slate-400 font-semibold rounded-xl text-xs flex items-center gap-3 transition-all cursor-pointer"
+            className="w-full px-3.5 py-2.5 bg-slate-850 hover:bg-rose-950/40 hover:text-rose-400 text-slate-400 font-semibold rounded-lg text-xs flex items-center gap-3 transition-all duration-200 cursor-pointer"
           >
             <LogOut className="h-4 w-4 text-rose-500" />
             <span>Keluar Sesi</span>
@@ -222,7 +224,7 @@ export default function StudentDashboard({
 
       {/* MOBILE HEADER - Only visible on screens < lg */}
       <header
-        className="h-16 border-b border-slate-200 bg-white px-4 md:px-8 flex lg:hidden items-center justify-between shrink-0"
+        className="sticky top-0 z-40 h-16 border-b border-slate-200 bg-white/90 px-4 md:px-6 flex lg:hidden items-center justify-between shrink-0 shadow-sm backdrop-blur-md"
         id="student-header"
       >
         <div className="flex items-center gap-3">
@@ -275,9 +277,9 @@ export default function StudentDashboard({
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="relative w-72 max-w-sm bg-slate-900 text-slate-400 h-full flex flex-col justify-between shadow-2xl z-10 p-6"
+              className="relative w-72 max-w-sm bg-slate-900 text-slate-400 h-full flex flex-col justify-between shadow-2xl z-10 p-5"
             >
-              <div className="space-y-8">
+              <div className="space-y-6">
                 {/* Logo and close */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -314,7 +316,7 @@ export default function StudentDashboard({
                       setActiveTab("dashboard");
                       setIsMenuOpen(false);
                     }}
-                    className={`w-full px-4 py-3 rounded-xl font-semibold flex items-center gap-3 transition-colors cursor-pointer ${
+                    className={`w-full px-3.5 py-2.5 rounded-lg font-semibold flex items-center gap-3 transition-all duration-200 cursor-pointer ${
                       activeTab === "dashboard"
                         ? "bg-blue-600 text-white"
                         : "hover:bg-slate-800 hover:text-slate-200"
@@ -330,7 +332,7 @@ export default function StudentDashboard({
                       setActiveTab("permohonan");
                       setIsMenuOpen(false);
                     }}
-                    className={`w-full px-4 py-3 rounded-xl font-semibold flex items-center gap-3 transition-colors cursor-pointer ${
+                    className={`w-full px-3.5 py-2.5 rounded-lg font-semibold flex items-center gap-3 transition-all duration-200 cursor-pointer ${
                       activeTab === "permohonan"
                         ? "bg-blue-600 text-white"
                         : "hover:bg-slate-800 hover:text-slate-200"
@@ -350,7 +352,7 @@ export default function StudentDashboard({
                         setActiveTab("kelulusan");
                         setIsMenuOpen(false);
                       }}
-                      className={`w-full px-4 py-3 rounded-xl font-semibold flex items-center gap-3 transition-colors cursor-pointer ${
+                      className={`w-full px-3.5 py-2.5 rounded-lg font-semibold flex items-center gap-3 transition-all duration-200 cursor-pointer ${
                         activeTab === "kelulusan"
                           ? "bg-blue-600 text-white"
                           : "hover:bg-slate-800 hover:text-slate-200"
@@ -368,7 +370,7 @@ export default function StudentDashboard({
                         setActiveTab("laporan");
                         setIsMenuOpen(false);
                       }}
-                      className={`w-full px-4 py-3 rounded-xl font-semibold flex items-center gap-3 transition-colors cursor-pointer ${
+                      className={`w-full px-3.5 py-2.5 rounded-lg font-semibold flex items-center gap-3 transition-all duration-200 cursor-pointer ${
                         activeTab === "laporan"
                           ? "bg-blue-600 text-white"
                           : "hover:bg-slate-800 hover:text-slate-200"
@@ -385,7 +387,7 @@ export default function StudentDashboard({
                       setActiveTab("pengaturan");
                       setIsMenuOpen(false);
                     }}
-                    className={`w-full px-4 py-3 rounded-xl font-semibold flex items-center gap-3 transition-colors cursor-pointer ${
+                    className={`w-full px-3.5 py-2.5 rounded-lg font-semibold flex items-center gap-3 transition-all duration-200 cursor-pointer ${
                       activeTab === "pengaturan"
                         ? "bg-blue-600 text-white"
                         : "hover:bg-slate-800 hover:text-slate-200"
@@ -398,13 +400,13 @@ export default function StudentDashboard({
               </div>
 
               {/* Logout inside drawer */}
-              <div className="pt-6 border-t border-slate-800">
+              <div className="pt-5 border-t border-slate-800">
                 <button
                   onClick={() => {
                     onLogout();
                     setIsMenuOpen(false);
                   }}
-                  className="w-full px-4 py-3 bg-slate-850 hover:bg-rose-950/40 hover:text-rose-400 text-slate-400 font-semibold rounded-xl text-xs flex items-center gap-3 transition-all cursor-pointer"
+                  className="w-full px-3.5 py-2.5 bg-slate-850 hover:bg-rose-950/40 hover:text-rose-400 text-slate-400 font-semibold rounded-lg text-xs flex items-center gap-3 transition-all duration-200 cursor-pointer"
                 >
                   <LogOut className="h-4 w-4 text-rose-500" />
                   <span>Keluar Sesi</span>
@@ -418,12 +420,20 @@ export default function StudentDashboard({
       {/* Main Content Pane */}
       <div className="flex-1 flex flex-col min-w-0">
         <main
-          className="flex-1 p-4 md:p-8 overflow-y-auto space-y-8"
+          className="flex-1 p-4 sm:p-5 lg:p-6 overflow-y-auto space-y-6"
           id="student-main-content"
         >
           {/* Active Tab rendering */}
           {activeTab === "dashboard" && (
-            <>
+            <StudentOverview
+              currentUser={currentUser}
+              application={application}
+              onNavigateForm={onNavigateForm}
+              onResubmitApplication={onResubmitApplication}
+              whatsappLink={whatsappLink}
+              setActiveTab={setActiveTab}
+              setIsEditingProfile={setIsEditingProfile}
+            >
               {applications.length > 0 && (
                 <section
                   className="space-y-3"
@@ -443,13 +453,13 @@ export default function StudentDashboard({
                       Daftar Magang Lagi
                     </button>
                   </div>
-                  <div className="divide-y divide-slate-200 border-y border-slate-200 bg-white">
+                  <div className="divide-y divide-slate-200 border border-slate-200 bg-white rounded-xl overflow-hidden shadow-xs">
                     {applications.map((app) => (
                       <button
                         key={app.id}
                         onClick={() => setSelectedApplicationId(app.id)}
                         aria-pressed={application?.id === app.id}
-                        className={`w-full px-4 py-3 text-left transition-colors cursor-pointer ${
+                        className={`w-full px-4 py-2.5 text-left transition-colors duration-200 cursor-pointer ${
                           application?.id === app.id
                             ? "bg-blue-50"
                             : "hover:bg-slate-50"
@@ -471,15 +481,7 @@ export default function StudentDashboard({
                   </div>
                 </section>
               )}
-              <StudentOverview
-                currentUser={currentUser}
-                application={application}
-                onNavigateForm={onNavigateForm}
-                whatsappLink={whatsappLink}
-                setActiveTab={setActiveTab}
-                setIsEditingProfile={setIsEditingProfile}
-              />
-            </>
+            </StudentOverview>
           )}
 
           {activeTab === "permohonan" && (

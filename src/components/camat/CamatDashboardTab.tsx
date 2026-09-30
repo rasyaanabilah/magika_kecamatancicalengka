@@ -62,7 +62,7 @@ export const CamatDashboardTab: React.FC<CamatDashboardTabProps> = ({
   });
 
   return (
-    <div className="space-y-8 animate-fade-in"> 
+    <div className="space-y-8 animate-fade-in">
       {/* Executive Greeting */}
       <div className="bg-gradient-to-r from-blue-600 to-emerald-600 rounded-3xl p-6 md:p-8 text-white shadow-xl shadow-blue-900/10 relative overflow-hidden flex flex-col md:flex-row items-center gap-6">
         <div className="absolute right-0 bottom-0 translate-x-10 translate-y-10 opacity-10">
@@ -205,6 +205,8 @@ export const CamatDashboardTab: React.FC<CamatDashboardTabProps> = ({
                 <option value="Menunggu">Menunggu</option>
                 <option value="Lulus">Lulus</option>
                 <option value="Ditolak">Ditolak</option>
+                <option value="Sedang Magang">Sedang Magang</option>
+                <option value="Selesai">Selesai</option>
               </select>
               <div className="absolute right-2.5 top-2.5 pointer-events-none text-slate-400">
                 <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
@@ -259,7 +261,7 @@ export const CamatDashboardTab: React.FC<CamatDashboardTabProps> = ({
                     </td>
                     <td className="p-4 font-semibold text-slate-700">
                       {app.instansiPendidikan ?? "-"}
-                    </td> 
+                    </td>
                     <td className="p-4">
                       {app.status === "Lulus" && (
                         <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded-md border border-emerald-200">
@@ -274,6 +276,16 @@ export const CamatDashboardTab: React.FC<CamatDashboardTabProps> = ({
                       {app.status === "Menunggu" && (
                         <span className="px-2 py-0.5 bg-amber-50 text-amber-700 text-[10px] font-bold rounded-md border border-amber-200">
                           Menunggu
+                        </span>
+                      )}
+                      {app.status === "Sedang Magang" && (
+                        <span className="px-2 py-0.5 bg-cyan-50 text-cyan-700 text-[10px] font-bold rounded-md border border-cyan-200">
+                          Sedang Magang
+                        </span>
+                      )}
+                      {app.status === "Selesai" && (
+                        <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-bold rounded-md border border-blue-200">
+                          Selesai
                         </span>
                       )}
                     </td>

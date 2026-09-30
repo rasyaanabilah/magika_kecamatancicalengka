@@ -57,6 +57,8 @@ export default function App() {
     "landing" | "login" | "register" | "form" | "dashboard" | "track"
   >("landing");
   const [trackedAppId, setTrackedAppId] = useState<string | null>(null);
+  const [applicationForResubmission, setApplicationForResubmission] =
+    useState<Application | null>(null);
 
   const [applications, setApplications] = useState<Application[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -1096,6 +1098,61 @@ export default function App() {
     }
   };
 
+  const handleResubmitApplication = async (updatedApp: Application) => {
+    const currentApplication = applications.find(
+      (application) => application.id === updatedApp.id,
+    );
+    const normalizedUserEmail = (currentUser?.email || "").trim().toLowerCase();
+    const ownsApplication =
+      currentApplication?.userId === currentUser?.id ||
+      (currentApplication?.userEmail || "").trim().toLowerCase() ===
+        normalizedUserEmail;
+
+    if (
+      !currentUser ||
+      !currentApplication ||
+      currentApplication.status !== "Ditolak" ||
+      !ownsApplication ||
+      updatedApp.id !== currentApplication.id
+    ) {
+      throw new Error("Pendaftaran ditolak ini tidak dapat dikirim ulang.");
+    }
+
+    const removeUndefined = (obj: any): any => {
+      if (Array.isArray(obj)) {
+        return obj.map((item) => removeUndefined(item));
+      }
+      if (obj !== null && typeof obj === "object") {
+        const cleaned: any = {};
+        for (const key in obj) {
+          if (obj[key] !== undefined) cleaned[key] = removeUndefined(obj[key]);
+        }
+        return cleaned;
+      }
+      return obj;
+    };
+    const cleanedApp = removeUndefined(updatedApp);
+
+    if (!isOfflineMode) {
+      await setDoc(
+        doc(db, "pendaftar_magang", currentApplication.id),
+        cleanedApp,
+        { merge: true },
+      );
+    }
+    setApplications((prev) =>
+      prev.map((application) =>
+        application.id === cleanedApp.id ? cleanedApp : application,
+      ),
+    );
+  };
+
+  const handleStartResubmission = (application: Application) => {
+    if (application.status !== "Ditolak") return;
+    setApplicationForResubmission(application);
+    setCurrentView("form");
+  };
+
   const handleAdminDeleteApplication = async (id: string) => {
     try {
       setApplications((prev) => prev.filter((a) => a.id !== id));
@@ -1285,9 +1342,17 @@ export default function App() {
           >
             <FormPage
               currentUser={currentUser}
-              onNavigateDashboard={() => setCurrentView("dashboard")}
-              onSubmitSuccess={(newApp) => {
-                handleNewApplication(newApp);
+              existingApplication={applicationForResubmission}
+              onResubmitApplication={handleResubmitApplication}
+              onNavigateDashboard={() => {
+                setApplicationForResubmission(null);
+                setCurrentView("dashboard");
+              }}
+              onSubmitSuccess={(submittedApp) => {
+                if (!applicationForResubmission) {
+                  handleNewApplication(submittedApp);
+                }
+                setApplicationForResubmission(null);
                 setCurrentView("dashboard");
               }}
             />
@@ -1307,7 +1372,11 @@ export default function App() {
               <StudentDashboard
                 currentUser={currentUser}
                 applications={getStudentApplications()}
-                onNavigateForm={() => setCurrentView("form")}
+                onNavigateForm={() => {
+                  setApplicationForResubmission(null);
+                  setCurrentView("form");
+                }}
+                onResubmitApplication={handleStartResubmission}
                 onLogout={handleLogout}
                 onDeleteApplication={handleDeleteApplication}
                 whatsappLink={whatsappLink}

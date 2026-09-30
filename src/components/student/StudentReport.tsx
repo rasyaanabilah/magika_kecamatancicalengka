@@ -64,6 +64,15 @@ export default function StudentReport({
       setLaporanError("Pilih pendaftaran yang akan dikaitkan dengan laporan.");
       return;
     }
+    if (
+      formMode === "new" &&
+      (application.status !== "Lulus" || application.laporan)
+    ) {
+      setLaporanError(
+        "Pendaftaran ini belum memenuhi syarat atau sudah memiliki laporan.",
+      );
+      return;
+    }
     if (!laporanTitle || !laporanFile) {
       setLaporanError("Mohon isi judul dan tautan Google Drive laporan.");
       return;
@@ -110,10 +119,10 @@ export default function StudentReport({
 
   return (
     <div
-      className="space-y-6 animate-fade-in font-sans"
+      className="space-y-5 animate-fade-in font-sans"
       id="tab-content-laporan"
     >
-      <section className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-5">
+      <section className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4">
         <div>
           <h4 className="font-display font-extrabold text-base text-slate-900">
             Laporan Akhir Magang
@@ -126,7 +135,7 @@ export default function StudentReport({
           <button
             type="button"
             onClick={startNewReport}
-            className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg transition-colors cursor-pointer flex items-center gap-2"
+            className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg transition-all duration-200 hover:shadow-sm cursor-pointer flex items-center gap-2"
           >
             <Plus className="h-4 w-4" /> Upload Laporan
           </button>
@@ -136,7 +145,7 @@ export default function StudentReport({
       {formMode && (
         <form
           onSubmit={handleLaporanSubmit}
-          className="space-y-5 border-b border-slate-200 pb-6"
+          className="space-y-4 border-b border-slate-200 pb-5"
         >
           <div className="flex items-center justify-between gap-3">
             <h5 className="font-bold text-sm text-slate-900">
@@ -165,14 +174,29 @@ export default function StudentReport({
                 onChange={(event) =>
                   setSelectedApplicationId(event.target.value)
                 }
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs"
                 required
               >
-                {reportableApplications.map((application) => (
-                  <option key={application.id} value={application.id}>
-                    {application.id}
-                  </option>
-                ))}
+                {applications.map((application) => {
+                  const isReportable =
+                    application.status === "Lulus" && !application.laporan;
+                  const unavailableReason = application.laporan
+                    ? " (sudah ada laporan)"
+                    : application.status !== "Lulus"
+                      ? " (belum berstatus Lulus)"
+                      : "";
+
+                  return (
+                    <option
+                      key={application.id}
+                      value={application.id}
+                      disabled={!isReportable}
+                    >
+                      {application.id}
+                      {unavailableReason}
+                    </option>
+                  );
+                })}
               </select>
             ) : (
               <p className="text-xs font-mono font-bold text-slate-800">
@@ -187,7 +211,7 @@ export default function StudentReport({
             </div>
           )}
 
-          <div className="space-y-4 max-w-xl">
+          <div className="space-y-3.5 max-w-xl">
             <div className="space-y-1.5">
               <label
                 className="text-xs font-bold text-slate-700"
@@ -200,7 +224,7 @@ export default function StudentReport({
                 type="text"
                 value={laporanTitle}
                 onChange={(event) => setLaporanTitle(event.target.value)}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs"
                 required
               />
             </div>
@@ -215,7 +239,7 @@ export default function StudentReport({
                 id="report-summary"
                 value={laporanRingkasan}
                 onChange={(event) => setLaporanRingkasan(event.target.value)}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs"
                 rows={3}
                 required
               />
@@ -233,7 +257,7 @@ export default function StudentReport({
                 value={laporanFile || ""}
                 onChange={(event) => setLaporanFile(event.target.value)}
                 placeholder="Tempelkan link Google Drive laporan di sini"
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs"
                 required
               />
               <p className="text-[11px] text-amber-700">
@@ -247,7 +271,7 @@ export default function StudentReport({
             <button
               type="submit"
               disabled={isUploadingLaporan}
-              className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg disabled:opacity-50 cursor-pointer"
+              className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg disabled:opacity-50 transition-all duration-200 hover:shadow-sm cursor-pointer"
             >
               {isUploadingLaporan
                 ? "Menyimpan..."
@@ -258,7 +282,7 @@ export default function StudentReport({
             <button
               type="button"
               onClick={() => setFormMode(null)}
-              className="px-5 py-2.5 border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs rounded-lg cursor-pointer"
+              className="px-4 py-2.5 border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs rounded-lg transition-colors duration-200 cursor-pointer"
             >
               Batal
             </button>
@@ -280,7 +304,7 @@ export default function StudentReport({
               return (
                 <article
                   key={application.id}
-                  className="py-4 flex flex-wrap items-start justify-between gap-4"
+                  className="py-3.5 flex flex-wrap items-start justify-between gap-3"
                 >
                   <div className="min-w-0 flex-1 space-y-1">
                     <p className="font-mono text-xs font-bold text-blue-700">
@@ -310,7 +334,7 @@ export default function StudentReport({
                   <button
                     type="button"
                     onClick={() => startEditingReport(application)}
-                    className="px-3 py-2 border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold rounded-lg text-xs cursor-pointer flex items-center gap-1.5"
+                    className="px-3 py-1.5 border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold rounded-lg text-xs transition-colors duration-200 cursor-pointer flex items-center gap-1.5"
                   >
                     <Pencil className="h-3.5 w-3.5" /> Ubah Laporan
                   </button>
@@ -319,7 +343,7 @@ export default function StudentReport({
             })}
           </div>
         ) : (
-          <div className="py-8 text-center text-xs text-slate-500">
+          <div className="py-6 text-center text-xs text-slate-500">
             Belum ada laporan akhir yang diarsipkan.
             {reportableApplications.length === 0 &&
               " Tombol upload tersedia setelah pendaftaran berstatus Lulus."}

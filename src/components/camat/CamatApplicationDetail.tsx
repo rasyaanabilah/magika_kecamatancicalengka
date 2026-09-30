@@ -16,6 +16,18 @@ export const CamatApplicationDetail: React.FC<CamatApplicationDetailProps> = ({
   selectedApp,
   onBack,
 }) => {
+  const isStudent = selectedApp.kategoriPendaftar === "siswa";
+  const statusClass =
+    selectedApp.status === "Lulus"
+      ? "bg-emerald-100 text-emerald-800 border-emerald-300"
+      : selectedApp.status === "Ditolak"
+        ? "bg-rose-100 text-rose-800 border-rose-300"
+        : selectedApp.status === "Selesai"
+          ? "bg-blue-100 text-blue-800 border-blue-300"
+          : selectedApp.status === "Sedang Magang"
+            ? "bg-cyan-100 text-cyan-800 border-cyan-300"
+            : "bg-amber-100 text-amber-800 border-amber-300";
+
   return (
     <div className="space-y-6 animate-fade-in" id="camat-full-page-detail">
       {/* Tombol Kembali & Bar Status */}
@@ -31,21 +43,11 @@ export const CamatApplicationDetail: React.FC<CamatApplicationDetailProps> = ({
           <span className="text-xs text-slate-400 font-bold">
             Status Evaluasi Berkas:
           </span>
-          {selectedApp.status === "Lulus" && (
-            <span className="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-lg border border-emerald-300">
-              Lulus
-            </span>
-          )}
-          {selectedApp.status === "Ditolak" && (
-            <span className="px-3 py-1 bg-rose-100 text-rose-800 text-xs font-bold rounded-lg border border-rose-300">
-              Ditolak
-            </span>
-          )}
-          {selectedApp.status === "Menunggu" && (
-            <span className="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-lg border border-amber-300">
-              Menunggu
-            </span>
-          )}
+          <span
+            className={`px-3 py-1 text-xs font-bold rounded-lg border ${statusClass}`}
+          >
+            {selectedApp.status}
+          </span>
         </div>
       </div>
 
@@ -123,18 +125,29 @@ export const CamatApplicationDetail: React.FC<CamatApplicationDetailProps> = ({
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="text-slate-400 font-semibold shrink-0 w-36">
-                      Fakultas / Kelas:
+                      {isStudent ? "Kelas:" : "Fakultas:"}
                     </span>
                     <span className="text-slate-800 font-bold">
-                      {selectedApp.fakultas || "-"}
+                      {(isStudent ? selectedApp.kelas : selectedApp.fakultas) ||
+                        "-"}
                     </span>
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="text-slate-400 font-semibold shrink-0 w-36">
-                      Jurusan:
+                      {isStudent ? "Jurusan:" : "Program Studi:"}
                     </span>
                     <span className="text-slate-800 font-bold">
-                      {selectedApp.prodi} (Semester {selectedApp.semester})
+                      {isStudent
+                        ? selectedApp.jurusan || selectedApp.prodi || "-"
+                        : `${selectedApp.prodi || "-"} (Semester ${selectedApp.semester || "-"})`}
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-slate-400 font-semibold shrink-0 w-36">
+                      {isStudent ? "NISN:" : "NIM:"}
+                    </span>
+                    <span className="text-slate-800 font-bold">
+                      {(isStudent ? selectedApp.nisn : selectedApp.nim) || "-"}
                     </span>
                   </div>
                   <div className="flex items-start gap-2">
@@ -175,25 +188,23 @@ export const CamatApplicationDetail: React.FC<CamatApplicationDetailProps> = ({
                     Folder Berkas Pendukung Peserta
                   </p>
                   <p className="text-[11px] text-slate-500 font-mono break-all mt-1 bg-white p-2 rounded-lg border border-slate-200">
-                    {selectedApp.linkDrive ||
-                      "https://drive.google.com/drive/folders/1NPM8E7j5i34Jov-qiRKvJA0nXw6PJKT8?usp=sharing"}
+                    {selectedApp.linkDrive || "Belum ada tautan berkas."}
                   </p>
                 </div>
               </div>
 
               <div className="flex justify-end pt-2 border-t border-slate-200/60">
-                <a
-                  href={
-                    selectedApp.linkDrive ||
-                    "https://drive.google.com/drive/folders/1NPM8E7j5i34Jov-qiRKvJA0nXw6PJKT8?usp=sharing"
-                  }
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
-                >
-                  <ExternalLink className="h-3.5 w-3.5" /> Buka Folder Berkas
-                  (Google Drive)
-                </a>
+                {selectedApp.linkDrive && (
+                  <a
+                    href={selectedApp.linkDrive}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" /> Buka Folder Berkas
+                    (Google Drive)
+                  </a>
+                )}
               </div>
             </div>
           </div>

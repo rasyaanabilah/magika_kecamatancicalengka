@@ -84,6 +84,27 @@ service cloud.firestore {
             && request.resource.data.namaLengkap is string
             && request.resource.data.namaLengkap.size() <= 200
           ) 
+          ||
+          // Student resubmission after rejection; keep identity and registration ID fixed.
+          (
+            request.auth.token.email.lower() == resource.data.userEmail.lower()
+            && resource.data.status == 'Ditolak'
+            && request.resource.data.status == 'Menunggu'
+            && request.resource.data.userEmail == resource.data.userEmail
+            && (
+              ('userId' in resource.data && request.resource.data.userId == resource.data.userId)
+              || (!('userId' in resource.data) && request.resource.data.userId == request.auth.uid)
+            )
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+              'status', 'userId', 'namaLengkap', 'jenisKelamin', 'noHp', 'alamatLengkap',
+              'kategoriPendaftar', 'nim', 'nisn', 'kelas', 'jurusan',
+              'instansiPendidikan', 'fakultas', 'prodi', 'semester', 'durasi',
+              'tanggalMulai', 'tanggalSelesai', 'tujuanMagang', 'linkDrive', 'files',
+              'rejectionHistory', 'rejectionReason', 'statusNote', 'verifiedBy', 'verifiedAt'
+            ])
+            && request.resource.data.namaLengkap is string
+            && request.resource.data.namaLengkap.size() <= 200
+          )
           || 
           // Staff/Admin updates
           (

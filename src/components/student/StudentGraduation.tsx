@@ -144,12 +144,12 @@ export default function StudentGraduation({
 
   return (
     <div
-      className="space-y-6 animate-fade-in max-w-4xl mx-auto"
+      className="space-y-5 animate-fade-in max-w-4xl mx-auto"
       id="tab-content-kelulusan-wrapper"
     >
       {/* Container */}
       <div
-        className="bg-white border border-slate-200/80 rounded-3xl p-6 md:p-8 shadow-xs space-y-6 font-sans"
+        className="bg-white border border-slate-200/80 rounded-2xl p-5 md:p-6 shadow-xs space-y-5 font-sans"
         id="tab-content-kelulusan"
       >
         <div className="space-y-1 border-b border-slate-100 pb-4">
@@ -157,7 +157,7 @@ export default function StudentGraduation({
             <Award className="h-3.5 w-3.5 text-blue-600" /> Dokumen Kelulusan
             Magang
           </div>
-          <h3 className="font-display font-extrabold text-xl text-slate-900 leading-tight">
+          <h3 className="font-display font-extrabold text-lg text-slate-900 leading-tight">
             Dokumen & Surat Kelulusan Resmi
           </h3>
           <p className="text-xs text-slate-500">
@@ -168,7 +168,7 @@ export default function StudentGraduation({
 
         {/* List of Available Documents */}
         {hasOfficialLetter ? (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {suratListForStudent.map((surat) => {
               const isKeterangan = surat.tipeSurat === "keterangan_magang";
               const suratRegistrationNumbers = applications
@@ -181,7 +181,7 @@ export default function StudentGraduation({
               return (
                 <div
                   key={surat.id}
-                  className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 md:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 hover:border-blue-300 transition-all"
+                  className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 md:p-5 flex flex-col sm:flex-row items-center justify-between gap-3 hover:border-blue-300 hover:shadow-xs transition-all duration-200"
                 >
                   <div className="space-y-1 text-center sm:text-left flex-1">
                     <div
@@ -196,7 +196,7 @@ export default function StudentGraduation({
                         ? "Surat Keterangan Magang"
                         : "Surat Balasan Resmi"}
                     </div>
-                    <h4 className="font-bold text-slate-900 text-base">
+                    <h4 className="font-bold text-slate-900 text-sm">
                       {surat.perihal ||
                         (isKeterangan
                           ? "Surat Keterangan Magang Kerja"
@@ -216,7 +216,7 @@ export default function StudentGraduation({
                         ? handlePrintKeteranganMagang(surat)
                         : handlePrintBalasan(surat)
                     }
-                    className={`w-full sm:w-auto px-5 py-3 text-white text-xs font-extrabold rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2 shrink-0 font-sans ${
+                    className={`w-full sm:w-auto px-4 py-2.5 text-white text-xs font-extrabold rounded-lg shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 shrink-0 font-sans ${
                       isKeterangan
                         ? "bg-emerald-600 hover:bg-emerald-700"
                         : "bg-blue-600 hover:bg-blue-700"
@@ -229,9 +229,9 @@ export default function StudentGraduation({
             })}
           </div>
         ) : (
-          <div className="bg-amber-50/80 border border-amber-200/90 rounded-2xl p-8 text-center space-y-3">
-            <div className="mx-auto h-12 w-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center shadow-xs">
-              <Clock className="h-6 w-6" />
+          <div className="bg-amber-50/80 border border-amber-200/90 rounded-xl p-6 text-center space-y-3">
+            <div className="mx-auto h-10 w-10 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center shadow-xs">
+              <Clock className="h-5 w-5" />
             </div>
 
             <div className="space-y-1 max-w-md mx-auto">
@@ -250,8 +250,8 @@ export default function StudentGraduation({
 
       {/* Bottom Notice */}
       {hasOfficialLetter && (
-        <div className="p-4 bg-blue-50 border border-blue-200/80 rounded-2xl flex items-start gap-3 shadow-2xs">
-          <AlertTriangle className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+        <div className="p-3.5 bg-blue-50 border border-blue-200/80 rounded-xl flex items-start gap-3 shadow-2xs">
+          <AlertTriangle className="h-4.5 w-4.5 text-blue-600 shrink-0 mt-0.5" />
           <div className="text-xs text-blue-900 space-y-1">
             <div className="font-extrabold">Informasi Penyerahan Berkas:</div>
             <p className="leading-relaxed text-blue-800">
