@@ -35,10 +35,7 @@ import {
   createUserWithEmailAndPassword,
   signOut,
   signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
   GoogleAuthProvider,
-  type User as FirebaseAuthUser,
 } from "firebase/auth";
 import {
   collection,
@@ -54,10 +51,6 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 
-const GOOGLE_AUTH_FLOW_KEY = "magika_google_auth_flow";
-
-type GoogleAuthFlow = "login" | "register";
-
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentView, setCurrentView] = useState<
@@ -66,10 +59,6 @@ export default function App() {
   const [trackedAppId, setTrackedAppId] = useState<string | null>(null);
   const [applicationForResubmission, setApplicationForResubmission] =
     useState<Application | null>(null);
-  const [googleRedirectError, setGoogleRedirectError] = useState<{
-    flow: GoogleAuthFlow;
-    message: string;
-  } | null>(null);
 
   const [applications, setApplications] = useState<Application[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -763,146 +752,45 @@ export default function App() {
     }
   };
 
-  const completeGoogleLogin = async (googleUser: FirebaseAuthUser) => {
-    const uid = googleUser.uid;
-    const email = googleUser.email || "";
-    const name = googleUser.displayName || email.split("@")[0] || "User Google";
-
-    const userDocRef = doc(db, "users", uid);
-    const docSnap = await getDoc(userDocRef);
-    let userData: User;
-
-    if (!docSnap.exists()) {
-      const newUser: User = {
-        id: uid,
-        email,
-        namaLengkap: name,
-        role: "student",
-        noHp: "",
-      };
-      await setDoc(userDocRef, newUser);
-      userData = newUser;
-    } else {
-      userData = docSnap.data() as User;
-    }
-
-    setCurrentUser(userData);
-    setCurrentView("dashboard");
-  };
-
-  const completeGoogleRegistration = async (googleUser: FirebaseAuthUser) => {
-    const uid = googleUser.uid;
-    const email = googleUser.email || "";
-    const name = googleUser.displayName || email.split("@")[0];
-    const avatarUrl = googleUser.photoURL || "";
-
-    const userDocRef = doc(db, "users", uid);
-    const docSnap = await getDoc(userDocRef);
-    if (docSnap.exists()) {
-      const userData = docSnap.data() as User;
-      setCurrentUser(userData);
-      setCurrentView("dashboard");
-    } else {
-      const newUser: User = {
-        id: uid,
-        email,
-        namaLengkap: name,
-        role: "student",
-        avatarUrl,
-      };
-      await setDoc(userDocRef, newUser);
-      setCurrentUser(newUser);
-      setCurrentView("dashboard");
-    }
-  };
-
-  const startGoogleAuthentication = async (flow: GoogleAuthFlow) => {
-    const provider = new GoogleAuthProvider();
-    if (flow === "login") {
-      provider.setCustomParameters({ prompt: "select_account" });
-    }
-
-    const startRedirect = async () => {
-      sessionStorage.setItem(GOOGLE_AUTH_FLOW_KEY, flow);
-      try {
-        await signInWithRedirect(auth, provider);
-      } catch (error) {
-        sessionStorage.removeItem(GOOGLE_AUTH_FLOW_KEY);
-        throw error;
-      }
-    };
-
-    const userAgent = navigator.userAgent;
-    const isMobileBrowser =
-      /Android|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(userAgent) ||
-      (/Macintosh/i.test(userAgent) && navigator.maxTouchPoints > 1);
-
-    if (isMobileBrowser) {
-      await startRedirect();
-      return;
-    }
-
-    try {
-      const credential = await signInWithPopup(auth, provider);
-      if (flow === "login") {
-        await completeGoogleLogin(credential.user);
-      } else {
-        await completeGoogleRegistration(credential.user);
-      }
-    } catch (error: any) {
-      if (
-        error.code !== "auth/popup-blocked" &&
-        error.code !== "auth/operation-not-supported-in-this-environment"
-      ) {
-        throw error;
-      }
-      await startRedirect();
-    }
-  };
-
-  useEffect(() => {
-    const flow = sessionStorage.getItem(GOOGLE_AUTH_FLOW_KEY);
-    if (flow !== "login" && flow !== "register") return;
-
-    // Consume the marker before awaiting so remounts cannot process this result twice.
-    sessionStorage.removeItem(GOOGLE_AUTH_FLOW_KEY);
-
-    const completeRedirect = async () => {
-      try {
-        const result = await getRedirectResult(auth);
-        if (!result) return;
-
-        if (flow === "login") {
-          await completeGoogleLogin(result.user);
-        } else {
-          await completeGoogleRegistration(result.user);
-        }
-      } catch (error) {
-        console.error("Google redirect authentication failed:", error);
-        setGoogleRedirectError({
-          flow,
-          message:
-            flow === "login"
-              ? "Gagal masuk dengan Google. Silakan coba lagi."
-              : "Gagal mendaftar dengan Google. Silakan coba lagi.",
-        });
-        setCurrentView(flow);
-      }
-    };
-
-    void completeRedirect();
-  }, []);
-
   const handleLoginWithGoogle = async () => {
     try {
-      setGoogleRedirectError(null);
-      await startGoogleAuthentication("login");
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({
+        prompt: "select_account",
+      });
+      const credential = await signInWithPopup(auth, provider);
+      const uid = credential.user.uid;
+      const email = credential.user.email || "";
+      const name =
+        credential.user.displayName || email.split("@")[0] || "User Google";
+
+      const userDocRef = doc(db, "users", uid);
+      const docSnap = await getDoc(userDocRef);
+      let userData: User;
+
+      if (!docSnap.exists()) {
+        const newUser: User = {
+          id: uid,
+          email: email,
+          namaLengkap: name,
+          role: "student", // 'student' is the internal role code used in MAGIKA for 'pendaftar'
+          noHp: "",
+        };
+        await setDoc(userDocRef, newUser);
+        userData = newUser;
+      } else {
+        userData = docSnap.data() as User;
+      }
+
+      setCurrentUser(userData);
+      setCurrentView("dashboard");
     } catch (err: any) {
       if (
         err.code === "auth/network-request-failed" ||
         err.message?.includes("network-request-failed") ||
         err.message?.includes("network") ||
-        err.message?.includes("offline")
+        err.message?.includes("offline") ||
+        err.code === "auth/popup-blocked"
       ) {
         setIsOfflineMode(true);
         localStorage.setItem("magika_is_offline", "true");
@@ -972,14 +860,38 @@ export default function App() {
 
   const handleRegisterWithGoogle = async () => {
     try {
-      setGoogleRedirectError(null);
-      await startGoogleAuthentication("register");
+      const provider = new GoogleAuthProvider();
+      const credential = await signInWithPopup(auth, provider);
+      const uid = credential.user.uid;
+      const email = credential.user.email || "";
+      const name = credential.user.displayName || email.split("@")[0];
+      const avatarUrl = credential.user.photoURL || "";
+
+      const userDocRef = doc(db, "users", uid);
+      const docSnap = await getDoc(userDocRef);
+      if (docSnap.exists()) {
+        const userData = docSnap.data() as User;
+        setCurrentUser(userData);
+        setCurrentView("dashboard");
+      } else {
+        const newUser: User = {
+          id: uid,
+          email: email,
+          namaLengkap: name,
+          role: "student",
+          avatarUrl: avatarUrl,
+        };
+        await setDoc(doc(db, "users", uid), newUser);
+        setCurrentUser(newUser);
+        setCurrentView("dashboard");
+      }
     } catch (err: any) {
       if (
         err.code === "auth/network-request-failed" ||
         err.message?.includes("network-request-failed") ||
         err.message?.includes("network") ||
-        err.message?.includes("offline")
+        err.message?.includes("offline") ||
+        err.code === "auth/popup-blocked"
       ) {
         setIsOfflineMode(true);
         localStorage.setItem("magika_is_offline", "true");
@@ -1390,11 +1302,6 @@ export default function App() {
           >
             <AuthPages
               initialView="login"
-              googleRedirectError={
-                googleRedirectError?.flow === "login"
-                  ? googleRedirectError.message
-                  : ""
-              }
               onNavigateHome={() => setCurrentView("landing")}
               onLoginWithEmail={handleLoginWithEmail}
               onLoginWithGoogle={handleLoginWithGoogle}
@@ -1415,11 +1322,6 @@ export default function App() {
           >
             <AuthPages
               initialView="register"
-              googleRedirectError={
-                googleRedirectError?.flow === "register"
-                  ? googleRedirectError.message
-                  : ""
-              }
               onNavigateHome={() => setCurrentView("landing")}
               onLoginWithEmail={handleLoginWithEmail}
               onLoginWithGoogle={handleLoginWithGoogle}
