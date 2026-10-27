@@ -8,7 +8,6 @@ import {
   Eye,
   Clock,
   XCircle,
-  Printer,
   AlertTriangle,
   Plus,
   ClipboardCheck,
@@ -324,86 +323,6 @@ export default function DataPendaftaran({
     const dateB = appB?.tanggalMulaiMagang || appB?.tanggalMulai || "";
     return dateA.localeCompare(dateB);
   });
-
-  // Print function
-  const handlePrintRiwayat = () => {
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) return;
-
-    const rowsHtml = filteredHistoryApps
-      .map((app, index) => {
-        const prodiText = app.prodi || "-";
-        const startTgl = formatIndoDate(
-          app.tanggalMulaiMagang || app.tanggalMulai,
-        );
-        const endTgl = formatIndoDate(
-          app.tanggalSelesaiMagang || app.tanggalSelesai,
-        );
-        const periodeText = `${startTgl} - ${endTgl}`;
-        const judulLaporan = app.laporan?.judul || "-";
-
-        return `
-        <tr>
-          <td style="padding: 10px 8px; border-bottom: 1px solid #ddd; text-align: center;">${index + 1}</td>
-          <td style="padding: 10px 8px; border-bottom: 1px solid #ddd; font-family: monospace; white-space: nowrap;">${app.id}</td>
-          <td style="padding: 10px 8px; border-bottom: 1px solid #ddd;"><b>${app.namaLengkap}</b></td>
-          <td style="padding: 10px 8px; border-bottom: 1px solid #ddd;">${app.instansiPendidikan ?? app.universitas ?? "-"}</td>
-          <td style="padding: 10px 8px; border-bottom: 1px solid #ddd;">${prodiText}</td>
-          <td style="padding: 10px 8px; border-bottom: 1px solid #ddd;">${judulLaporan}</td>
-          <td style="padding: 10px 8px; border-bottom: 1px solid #ddd; white-space: nowrap; font-size: 11px;">${periodeText}</td>
-        </tr>
-      `;
-      })
-      .join("");
-
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Laporan Riwayat Pendaftaran MAGIKA</title>
-          <style>
-            @page { size: A4 landscape; margin: 0mm; }
-            body { font-family: Arial, sans-serif; margin: 1.5cm; color: #333; }
-            .meta-info { text-align: right; margin-bottom: 15px; font-size: 11px; color: #555; }
-            .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
-            .header h2 { margin: 0; font-size: 18px; text-transform: uppercase; }
-            .header p { margin: 5px 0 0 0; font-size: 12px; color: #555; }
-            table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
-            th { background-color: #f1f5f9; color: #1e293b; padding: 10px 8px; font-weight: bold; text-align: left; border-top: 1px solid #333; border-bottom: 2px solid #333; text-transform: uppercase; }
-            td { padding: 8px; border-bottom: 1px solid #e2e8f0; }
-            @media print { body { margin: 1.5cm; } }
-          </style>
-        </head>
-          <div class="header">
-            <h2>Rekap Riwayat Pendaftaran Magang</h2>
-            <p>Kecamatan Cicalengka - Program Pemberdayaan Digital MAGIKA</p>
-          </div>
-          <div class="meta-info">
-            Tanggal Cetak: ${new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th style="text-align: center; width: 40px;">No</th>
-                <th style="width: 100px;">No. Daftar</th>
-                <th>Nama Lengkap</th>
-                <th>Instansi Pendidikan</th>
-                <th>Program Studi</th>
-                <th>Judul Laporan</th>
-                <th>Periode Magang</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rowsHtml || '<tr><td colspan="7" style="text-align:center; padding: 20px;">Tidak ada data ditemukan</td></tr>'}
-            </tbody>
-          </table>
-          <script>
-            window.onload = function() { window.print(); }
-          </script>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-  };
 
   const handleExecuteAccept = () => {
     if (!acceptTargetApp) return;
@@ -810,13 +729,6 @@ export default function DataPendaftaran({
             id="btn-tambah-pendaftaran-manual-riwayat"
           >
             <Plus className="h-4 w-4" /> Tambah Pendaftar Manual
-          </button>
-
-          <button
-            onClick={handlePrintRiwayat}
-            className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-2 shadow-md shadow-blue-500/10 font-sans"
-          >
-            <Printer className="h-4 w-4" /> Cetak Laporan / Unduh PDF
           </button>
         </div>
       </div>
